@@ -1,0 +1,104 @@
+services:
+    # ─── Database ───────────────────────────────────────────
+    postgres:
+        image: postgres:16
+        container_name: caramelo-postgres
+        environment:
+            POSTGRES_USER: caramelo
+            POSTGRES_PASSWORD: caramelo123
+            POSTGRES_DB: caramelo_bet
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U caramelo -d caramelo_bet"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    # ─── Cache ──────────────────────────────────────────────
+    redis:
+        image: redis:7-alpine
+        container_name: caramelo-redis
+        ports:
+            - "6379:6379"
+        volumes:
+            - redis_data:/data
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    # ─── Message Queue ───────────────────────────────────────
+    rabbitmq:
+        image: rabbitmq:3-management-alpine
+        container_name: caramelo-rabbitmq
+        environment:
+            RABBITMQ_DEFAULT_USER: caramelo
+            RABBITMQ_DEFAULT_PASS: caramelo123
+        ports:
+            - "5672:5672" # AMQP
+            - "15672:15672" # Management UI
+        volumes:
+            - rabbitmq_data:/var/lib/rabbitmq
+        healthcheck:
+            test: ["CMD", "rabbitmq-diagnostics", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    # ─── Logging ─────────────────────────────────────────────
+    seq:
+        image: datalust/seq:latest
+        container_name: caramelo-seq
+        environment:
+            ACCEPT_EULA: Y
+            SEQ_FIRSTRUN_ADMINPASSWORD: caramelo123
+        ports:
+            - "5341:5341"
+            - "8081:80"
+        volumes:
+            - seq_data:/data
+
+    # ─── Metrics ─────────────────────────────────────────────
+    prometheus:
+        image: prom/prometheus:latest
+        container_name: caramelo-prometheus
+        ports:
+            - "9090:9090"
+        volumes:
+            - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+            - prometheus_data:/prometheus
+
+    grafana:
+        image: grafana/grafana:latest
+        container_name: caramelo-grafana
+        environment:
+            GF_SECURITY_ADMIN_PASSWORD: caramelo123
+        ports:
+            - "3001:3000"
+        volumes:
+            - grafana_data:/var/lib/grafana
+        depends_on:
+            - prometheus
+
+    # ─── Tracing ─────────────────────────────────────────────
+    jaeger:
+        image: jaegertracing/jaeger:2.6.0
+        container_name: caramelo-jaeger
+        ports:
+            - "16686:16686" # UI
+            - "4317:4317" # OTLP gRPC
+            - "4318:4318" # OTLP HTTP
+        environment:
+            COLLECTOR_OTLP_ENABLED: "true"
+
+volumes:
+    postgres_data:
+    redis_data:
+    rabbitmq_data:
+    seq_data:
+    prometheus_data:
+    grafana_data:

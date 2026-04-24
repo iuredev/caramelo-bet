@@ -1,0 +1,6 @@
+@CarameloBet.API_HostAddress = http://localhost:5057
+
+GET {{CarameloBet.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

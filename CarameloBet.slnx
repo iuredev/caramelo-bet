@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CarameloBet.API/CarameloBet.API.csproj" />
+    <Project Path="src/CarameloBet.Application/CarameloBet.Application.csproj" />
+    <Project Path="src/CarameloBet.Domain/CarameloBet.Domain.csproj" />
+    <Project Path="src/CarameloBet.Gateway/CarameloBet.Gateway.csproj" />
+    <Project Path="src/CarameloBet.Infrastructure/CarameloBet.Infrastructure.csproj" />
+    <Project Path="src/CarameloBet.Workers/CarameloBet.Workers.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CarameloBet.Application.Tests/CarameloBet.Application.Tests.csproj" />
+    <Project Path="tests/CarameloBet.Architecture.Tests/CarameloBet.Architecture.Tests.csproj" />
+    <Project Path="tests/CarameloBet.Domain.Tests/CarameloBet.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

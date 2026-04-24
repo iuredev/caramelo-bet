@@ -1,0 +1,6 @@
+@CarameloBet.Gateway_HostAddress = http://localhost:5186
+
+GET {{CarameloBet.Gateway_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
