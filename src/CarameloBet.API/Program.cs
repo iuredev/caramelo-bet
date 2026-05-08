@@ -5,6 +5,7 @@ using Prometheus;
 using MassTransit;
 using FluentValidation;
 using MapsterMapper;
+using CarameloBet.API.Middleware;
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
 
@@ -54,7 +55,8 @@ try
     // Mapster
     builder.Services.AddScoped<IMapper, Mapper>();
 
-
+    builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+    builder.Services.AddProblemDetails();
     // Add services to the container.
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
@@ -75,12 +77,18 @@ try
     // Prometheus
     app.UseMetricServer();
     app.UseHttpMetrics();
+    app.UseExceptionHandler();
+
 
     app.MapGet("/", () =>
         {
             return "Hello, World!";
         });
 
+    app.MapGet("/test-error", () =>
+        {
+            throw new Exception();
+        });
     app.Run();
 }
 catch (Exception ex)

@@ -10,7 +10,7 @@ services:
         ports:
             - "5432:5432"
         volumes:
-            - postgres_data:/var/lib/postgresql/data
+            - postgres_data:/var/lib/postgresql
         healthcheck:
             test: ["CMD-SHELL", "pg_isready -U caramelo -d caramelo_bet"]
             interval: 10s
@@ -89,11 +89,15 @@ services:
         image: jaegertracing/jaeger:2.6.0
         container_name: caramelo-jaeger
         ports:
-            - "16686:16686" # UI
-            - "4317:4317" # OTLP gRPC
-            - "4318:4318" # OTLP HTTP
-        environment:
-            COLLECTOR_OTLP_ENABLED: "true"
+            - "16686:16686"
+            - "4317:4317"
+            - "4318:4318"
+            - "8889:8889"
+        volumes:
+            - ./infra/jaeger/jaeger-config.yml:/etc/jaeger/config.yml
+        command: ["--config", "/etc/jaeger/config.yml"]
+        depends_on:
+            - prometheus
 
 volumes:
     postgres_data:
