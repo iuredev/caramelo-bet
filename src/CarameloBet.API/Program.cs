@@ -3,12 +3,15 @@ using OpenTelemetry.Trace;
 using OpenTelemetry.Resources;
 using Prometheus;
 using MassTransit;
+using FluentValidation;
+using MapsterMapper;
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
 
 try
 {
     var builder = WebApplication.CreateBuilder(args);
+
 
     // Prometheus
     builder.Services.AddMetrics();
@@ -44,6 +47,14 @@ try
                     cfg.ConfigureEndpoints(context);
                 });
         });
+
+    //FluentValidation
+    builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+    // Mapster
+    builder.Services.AddScoped<IMapper, Mapper>();
+
+
     // Add services to the container.
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
