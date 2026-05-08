@@ -1,41 +1,82 @@
-var builder = WebApplication.CreateBuilder(args);
+using Serilog;
+using OpenTelemetry.Trace;
+using OpenTelemetry.Resources;
+using Prometheus;
+using MassTransit;
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
 
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+try
 {
-    app.MapOpenApi();
+    var builder = WebApplication.CreateBuilder(args);
+
+    // Prometheus
+    builder.Services.AddMetrics();
+
+    // OpenTelemetry
+    builder.Services.AddOpenTelemetry()
+        .ConfigureResource(resource => resource.AddService("CarameloBet.API"))
+        .WithTracing(tracing => tracing.AddAspNetCoreInstrumentation().AddOtlpExporter(otlp =>
+           {
+               otlp.Endpoint = new Uri(builder.Configuration["Jaeger:Endpoint"]
+                               ?? "http://localhost:4317");
+
+           }));
+    // Serilog
+    builder.Host.UseSerilog((context, services, configuration) => configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .WriteTo.Console()
+        .WriteTo.Seq(context.Configuration["Seq:ServeUrl"] ?? "http://localhost:5341")
+    );
+    // RabbitMQ
+    builder.Services.AddMassTransit(x =>
+        {
+            x.UsingRabbitMq((context, cfg) =>
+                {
+                    cfg.Host(builder.Configuration["RabbitMQ:Host"] ?? "localhost", "/",
+                        host =>
+                        {
+                            host.Username(builder.Configuration["RabbitMQ:Username"] ?? "caramelo");
+                            host.Password(builder.Configuration["RabbitMQ:Password"] ?? "caramelo123");
+                        });
+
+                    cfg.ConfigureEndpoints(context);
+                });
+        });
+    // Add services to the container.
+    // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+    builder.Services.AddOpenApi();
+
+    var app = builder.Build();
+
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
+    {
+        app.MapOpenApi();
+    }
+
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseHttpsRedirection();
+    }
+
+    // Prometheus
+    app.UseMetricServer();
+    app.UseHttpMetrics();
+
+    app.MapGet("/", () =>
+        {
+            return "Hello, World!";
+        });
+
+    app.Run();
 }
-
-app.UseHttpsRedirection();
-
-var summaries = new[]
+catch (Exception ex)
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
+    Log.Fatal(ex, "Application failed to start");
+}
+finally
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
-app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    Log.CloseAndFlush();
 }
