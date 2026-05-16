@@ -5,7 +5,7 @@ using Prometheus;
 using MassTransit;
 using FluentValidation;
 using MapsterMapper;
-using CarameloBet.API.Middleware;
+using CarameloBet.API.Middlewares;
 using CarameloBet.API.Models;
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
@@ -46,6 +46,14 @@ try
                             host.Password(builder.Configuration["RabbitMQ:Password"] ?? "caramelo123");
                         });
 
+                    cfg.UseMessageRetry(retry =>
+                        {
+                            retry.Incremental(3, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2));
+                        });
+                    cfg.UseDelayedRedelivery(retry =>
+                        {
+                            retry.Intervals(TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(15), TimeSpan.FromMinutes(30));
+                        });
                     cfg.ConfigureEndpoints(context);
                 });
         });
