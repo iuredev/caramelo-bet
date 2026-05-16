@@ -6,6 +6,7 @@ using MassTransit;
 using FluentValidation;
 using MapsterMapper;
 using CarameloBet.API.Middleware;
+using CarameloBet.API.Models;
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
 
@@ -16,7 +17,6 @@ try
 
     // Prometheus
     builder.Services.AddMetrics();
-
     // OpenTelemetry
     builder.Services.AddOpenTelemetry()
         .ConfigureResource(resource => resource.AddService("CarameloBet.API"))
@@ -89,6 +89,8 @@ try
         {
             throw new Exception();
         });
+
+    app.MapGet("/health", () => ApiResponse<string>.Ok("CarameloBet API is running"));
     app.Run();
 }
 catch (Exception ex)

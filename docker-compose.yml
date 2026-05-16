@@ -93,6 +93,7 @@ services:
             - "4317:4317"
             - "4318:4318"
             - "8889:8889"
+            - "8888:8888"
         volumes:
             - ./infra/jaeger/jaeger-config.yml:/etc/jaeger/config.yml
         command: ["--config", "/etc/jaeger/config.yml"]
