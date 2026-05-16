@@ -12,6 +12,20 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
 
+    // CORS
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("CarameloBetPolicy", policy =>
+        {
+            policy
+                .WithOrigins(
+                    builder.Configuration["Cors:AllowedOrigins"] ?? "http://localhost:3000")
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+        });
+    });
+
     // Serilog
     builder.Host.UseSerilog((context, services, configuration) => configuration
         .ReadFrom.Configuration(context.Configuration)
@@ -43,6 +57,8 @@ try
     builder.Services.AddRedisRateLimiting(builder.Configuration);
 
     var app = builder.Build();
+
+    app.UseCors("CarameloBetPolicy");
 
     app.UseRedisRateLimiting();
     app.UseAuthentication();

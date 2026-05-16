@@ -15,6 +15,20 @@ try
     var builder = WebApplication.CreateBuilder(args);
 
 
+    // CORS
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("CarameloBetPolicy", policy =>
+        {
+            policy
+                .WithOrigins(
+                    builder.Configuration["Cors:AllowedOrigins"] ?? "http://localhost:3000")
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+        });
+    });
+
     // Prometheus
     builder.Services.AddMetrics();
     // OpenTelemetry
@@ -82,6 +96,8 @@ try
     {
         app.UseHttpsRedirection();
     }
+
+    app.UseCors("CarameloBetPolicy");
 
     // Prometheus
     app.UseMetricServer();
