@@ -2,7 +2,7 @@ using Serilog;
 using Prometheus;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-
+using CarameloBet.Gateway.Middlewares;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -37,8 +37,16 @@ try
                     ?? "http://localhost:4317");
             }));
 
+    builder.Services.AddJwtAuthentication(builder.Configuration);
+    // builder.Services.AddRateLimiting(builder.Configuration);
+    // Redis Rate Limiting
+    builder.Services.AddRedisRateLimiting(builder.Configuration);
+
     var app = builder.Build();
 
+    app.UseRedisRateLimiting();
+    app.UseAuthentication();
+    app.UseAuthorization();
     app.UseSerilogRequestLogging();
     app.UseMetricServer();
     app.UseHttpMetrics();
