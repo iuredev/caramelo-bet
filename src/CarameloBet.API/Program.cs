@@ -20,7 +20,8 @@ try
     // OpenTelemetry
     builder.Services.AddOpenTelemetry()
         .ConfigureResource(resource => resource.AddService("CarameloBet.API"))
-        .WithTracing(tracing => tracing.AddAspNetCoreInstrumentation().AddOtlpExporter(otlp =>
+        .WithTracing(tracing => tracing.AddAspNetCoreInstrumentation()
+            .AddOtlpExporter(otlp =>
            {
                otlp.Endpoint = new Uri(builder.Configuration["Jaeger:Endpoint"]
                                ?? "http://localhost:4317");
@@ -90,6 +91,7 @@ try
             throw new Exception();
         });
 
+    app.MapGet("/api", () => ApiResponse<string>.Ok("V1 API is running"));
     app.MapGet("/health", () => ApiResponse<string>.Ok("CarameloBet API is running"));
     app.Run();
 }
