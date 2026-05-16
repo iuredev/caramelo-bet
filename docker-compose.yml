@@ -31,6 +31,14 @@ services:
             timeout: 5s
             retries: 5
 
+    redis-insight:
+        image: redis/redisinsight:latest
+        container_name: caramelo-redis-insight
+        ports:
+            - "5540:5540"
+        depends_on:
+            - redis
+
     # ─── Message Queue ───────────────────────────────────────
     rabbitmq:
         image: rabbitmq:3-management-alpine
