@@ -1,32 +1,52 @@
 # 🎰 CarameloBet
 
-> Multiplayer iGaming platform featuring real-time European Roulette, built with ASP.NET Core .NET 10 and a production-grade architecture.
+> Multiplayer iGaming platform featuring real-time European Roulette and Aviator Crash Game, built with ASP.NET Core .NET 10 and a production-grade Modular Monolith architecture.
 
 ![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?style=flat-square&logo=dotnet)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=flat-square&logo=postgresql)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-latest-336791?style=flat-square&logo=postgresql)
 ![Redis](https://img.shields.io/badge/Redis-7-DC382D?style=flat-square&logo=redis)
 ![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3.13-FF6600?style=flat-square&logo=rabbitmq)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker)
+![Next.js](https://img.shields.io/badge/Next.js-15-000000?style=flat-square&logo=nextdotjs)
 
 ---
 
 ## Overview
 
-CarameloBet is a portfolio project that demonstrates a production-grade iGaming platform. It features a multiplayer European Roulette game where players connect in real-time, place bets, and watch the wheel spin together.
+CarameloBet is a portfolio project demonstrating a production-grade iGaming platform. It features two real-time multiplayer games — European Roulette and Aviator — where players connect simultaneously, place bets, and watch outcomes in real time.
 
-The project was designed with a full system design process — requirements gathering, high-level design, low-level design — before a single line of code was written. Every architectural decision has a documented reason behind it.
+The project was designed with a full system design process before a single line of code was written — requirements gathering, high-level design, low-level design, technology decisions, and implementation planning. Every architectural decision has a documented reason behind it.
 
 ---
 
-## Features
+## Games
 
-- 🎡 **Multiplayer European Roulette** — real-time, multiple players per table
-- 💰 **Virtual Wallet** — credits system with full transaction history
-- 🔐 **Authentication** — JWT with refresh tokens and RBAC
-- ⚡ **Real-time** — SignalR WebSocket for live game events
-- 📊 **Observability** — structured logging, metrics, and distributed tracing
-- 🛡️ **Rate Limiting** — Redis-backed request throttling
-- 📋 **Audit Trail** — every bet, round, and transaction permanently recorded
+### 🎡 European Roulette
+Multiplayer RNG-based roulette with even chance bets. 37 numbers (0-36), single zero. Players join a shared table, place bets during the betting phase, and watch the wheel spin together.
+
+Supported bet types (all pay 1:1):
+- **Red / Black** — bet on the color of the winning number
+- **Odd / Even** — bet on the parity of the winning number
+- **Low / High** — bet on 1-18 or 19-36
+
+Zero means everyone loses. Simple, fair, and extensible — more bet types can be added without changing the core infrastructure.
+
+### ✈️ Aviator
+Multiplayer crash game. A plane takes off and a multiplier increases in real time. Players must cash out before the plane crashes — the longer you wait, the higher the potential payout. If the plane crashes before you cash out, you lose your bet.
+
+Both games share the same infrastructure — wallet, auth, history, and observability — but have isolated game logic and independent Round Workers.
+
+---
+
+## Default Tables
+
+Three tables are seeded automatically on startup:
+
+```
+Roulette Table 1  → European Roulette, min 10, max 1,000 credits
+Roulette Table 2  → European Roulette, min 10, max 1,000 credits
+Aviator Table 1   → Aviator, min 10, max 10,000 credits
+```
 
 ---
 
@@ -37,22 +57,23 @@ CarameloBet follows a **Modular Monolith** architecture — clear service bounda
 ```
 Client (Next.js)
     ↕ HTTP / WebSocket
-Nginx (Load Balancer)
+Nginx (Load Balancer — port 80)
     ↕
-YARP (API Gateway) — JWT validation, Rate limiting
+YARP API Gateway — JWT validation, Redis rate limiting
     ↕ HTTP
-┌─────────────────────────────────────────┐
-│  Auth Service  │  Wallet Service         │
-│  Game Service  │  History Service        │
-└─────────────────────────────────────────┘
-    ↕                    ↕
-  Redis              RabbitMQ
-(Round state,      (Async events)
- Rate limits)           ↕
-                  Wallet Service
-                  History Service
+┌──────────────────────────────────────────────┐
+│  Auth Service  │  Wallet Service             │
+│  Game Service  │  History Service            │
+└──────────────────────────────────────────────┘
+    ↕                         ↕
+  Redis                   RabbitMQ
+(Round state,           (Async events,
+ Rate limits)            Retry + DLQ)
+                              ↕
+                       Wallet Service
+                       History Service
     ↕
-PostgreSQL (Primary + Replica)
+PostgreSQL
 ```
 
 ### Services
@@ -61,17 +82,29 @@ PostgreSQL (Primary + Replica)
 |---|---|
 | **Auth Service** | Registration, login, JWT, RBAC |
 | **Wallet Service** | Balance, deposits, withdrawals, payouts |
-| **Game Service** | Tables, rounds, bet placement |
-| **Round Worker** | Autonomous round lifecycle engine |
+| **Game Service** | Tables, rounds, bet placement, SignalR hub |
+| **Round Worker** | Autonomous round lifecycle engine (one per table) |
 | **History Service** | Audit trail, reports, bet history |
+| **RNG Service** | Cryptographically secure random number generation (Rust + gRPC) |
 
 ### Round Lifecycle
 
-Every table runs a Round Worker — an autonomous background service that drives the round lifecycle independently of player actions:
-
+**Roulette:**
 ```
-Create round → Open bets (30s) → Close bets → Spin (RNG) →
-Calculate winners → Pay via queue → Save to DB → Broadcast → Repeat
+Create round → Open bets (30s) → Close bets →
+Call RNG Service (gRPC) → result 0-36 →
+Calculate winners (red/black/odd/even/low/high) →
+Publish payouts to queue → Save to DB →
+Broadcast result via SignalR → Wait 5s → Repeat
+```
+
+**Aviator:**
+```
+Create round → Open bets (10s) → Close bets →
+Plane takes off → Multiplier increases →
+Crash point generated by RNG Service (gRPC) →
+Pay players who cashed out before crash →
+Save to DB → Broadcast via SignalR → Wait 5s → Repeat
 ```
 
 ---
@@ -80,23 +113,24 @@ Calculate winners → Pay via queue → Save to DB → Broadcast → Repeat
 
 | Layer | Technology |
 |---|---|
-| Frontend | Next.js 15 + React |
+| Frontend | Next.js 15 + React (separate repo) |
 | Backend | ASP.NET Core (.NET 10) |
 | API Gateway | YARP |
 | Load Balancer | Nginx |
 | Realtime | SignalR |
-| Database | PostgreSQL 16 |
+| Database | PostgreSQL (latest) |
 | ORM | Entity Framework Core 10 |
-| Cache | Redis + StackExchange.Redis |
-| Message Queue | RabbitMQ + MassTransit |
+| Cache | Redis 7 + StackExchange.Redis |
+| Message Queue | RabbitMQ + MassTransit v8 |
 | Auth | JWT + BCrypt |
 | Validation | FluentValidation |
 | Mapping | Mapster |
 | Logs | Serilog + Seq |
 | Metrics | Prometheus + Grafana |
-| Traces | OpenTelemetry + Jaeger |
+| Traces | OpenTelemetry + Jaeger (SPM enabled) |
 | Testing | xUnit + Testcontainers |
 | Email | Resend |
+| RNG Service | Rust + gRPC (separate repo) |
 | Containers | Docker + Docker Compose |
 
 ---
@@ -106,21 +140,30 @@ Calculate winners → Pay via queue → Save to DB → Broadcast → Repeat
 Four PostgreSQL schemas with clean separation:
 
 ```
-auth.*     → users, roles, permissions, tokens (6 tables)
-wallet.*   → wallets, transactions (2 tables)
-game.*     → games, tables, rounds, bets (4 tables)
+auth.*     → users, roles, permissions, tokens (7 tables)
+wallet.*   → wallets, transactions, outbox (3 tables)
+game.*     → games, tables, rounds, bets, outbox (5 tables)
 history.*  → events — event store pattern (1 table)
 ```
 
-**Total: 13 tables**
+**Total: 16 tables**
 
 Key design decisions:
 - UUID primary keys — no sequential ID enumeration
 - `decimal(18,2)` for all monetary values — never float
 - Pessimistic locking on wallet debits — prevents race conditions
 - Idempotency keys on transactions — prevents duplicate credits
-- Soft delete with status fields — preserves audit trail
+- Outbox pattern — guarantees no lost events between DB and queue
+- Soft delete with status fields — preserves audit trail forever
 - RBAC — role-based access control with granular permissions
+- `balance_before` + `balance_after` on every transaction — full audit trail
+
+### Bet Types
+
+```
+Roulette: red, black, odd, even, low, high  (all pay 1:1)
+Aviator:  cashout                            (pays current multiplier)
+```
 
 ---
 
@@ -136,13 +179,33 @@ Key design decisions:
 ### Message Queue Events
 
 ```
-Round Worker  → round.finished, payout.process
+Round Worker   → round.finished, payout.process
 Wallet Service → wallet.debited, wallet.credited
-Game Service  → bet.placed
+Game Service   → bet.placed
 
-History Service ← consumes all events
-Wallet Service  ← consumes payout.process
+History Service ← consumes: round.finished, wallet.debited, wallet.credited, bet.placed
+Wallet Service  ← consumes: payout.process
 ```
+
+### Reliability
+
+- **Retry strategy** — 3 incremental retries (1s, 3s, 5s) via MassTransit
+- **Dead Letter Queue** — delayed redelivery at 5m, 15m, 30m before DLQ
+- **Idempotency** — unique constraint on `idempotency_key` prevents duplicate processing
+- **Outbox pattern** — events written to DB in the same transaction as business data
+
+---
+
+## Observability
+
+| Tool | Purpose | URL |
+|---|---|---|
+| Seq | Structured log aggregation | http://localhost:8081 |
+| Prometheus | Metrics collection | http://localhost:9090 |
+| Grafana | Metrics dashboards | http://localhost:3001 |
+| Jaeger | Distributed tracing + SPM | http://localhost:16686 |
+| RedisInsight | Redis monitoring | http://localhost:5540 |
+| RabbitMQ | Queue monitoring | http://localhost:15672 |
 
 ---
 
@@ -167,20 +230,28 @@ docker compose up -d
 # Apply database migrations
 dotnet ef database update --project src/CarameloBet.Infrastructure
 
+# Run the Gateway
+dotnet run --project src/CarameloBet.Gateway
+
 # Run the API
 dotnet run --project src/CarameloBet.API
 
+# Run the Workers
+dotnet run --project src/CarameloBet.Workers
 ```
 
-### Access the services
+### Service URLs (local)
 
 | Service | URL |
 |---|---|
-| API | http://localhost:5000 |
+| Platform (via Nginx) | http://localhost |
+| API Gateway | http://localhost:5186 |
+| API | http://localhost:5057 |
 | RabbitMQ Dashboard | http://localhost:15672 |
-| Seq (Logs) | http://localhost:5341 |
+| Seq (Logs) | http://localhost:8081 |
 | Grafana (Metrics) | http://localhost:3001 |
 | Jaeger (Traces) | http://localhost:16686 |
+| RedisInsight | http://localhost:5540 |
 
 ---
 
@@ -189,18 +260,22 @@ dotnet run --project src/CarameloBet.API
 ```
 CarameloBet/
 ├── src/
-│   ├── CarameloBet.Domain          # Entities, value objects
-│   ├── CarameloBet.Application     # Use cases, CQRS, DTOs
-│   ├── CarameloBet.Infrastructure  # EF Core, repos, external services
-│   ├── CarameloBet.API             # ASP.NET Core, endpoints
-│   ├── CarameloBet.Gateway         # YARP API Gateway
-│   └── CarameloBet.Workers         # Round Worker background services
+│   ├── CarameloBet.Domain          # Entities, enums, exceptions, interfaces
+│   ├── CarameloBet.Application     # Use cases, DTOs, validators, mappings
+│   ├── CarameloBet.Infrastructure  # EF Core, repositories, Redis, messaging
+│   ├── CarameloBet.API             # ASP.NET Core endpoints, SignalR hub
+│   ├── CarameloBet.Gateway         # YARP, JWT middleware, Redis rate limiting
+│   └── CarameloBet.Workers         # Round Workers (Roulette + Aviator)
 ├── tests/
 │   ├── CarameloBet.Domain.Tests
 │   ├── CarameloBet.Application.Tests
 │   └── CarameloBet.Architecture.Tests
-├── frontend/                       # Next.js application
+├── infra/
+│   ├── prometheus/prometheus.yml
+│   ├── jaeger/jaeger-config.yml
+│   └── nginx/nginx.conf
 ├── docker-compose.yml
+├── .editorconfig
 └── README.md
 ```
 
@@ -209,10 +284,10 @@ CarameloBet/
 ## Key Design Decisions
 
 **Why Modular Monolith over Microservices?**
-Clean service boundaries without the operational overhead of managing multiple deployments, networks, and databases as a solo developer. The architecture is designed to extract services when needed.
+Clean service boundaries without the operational overhead of managing multiple deployments as a solo developer. The architecture is designed so individual services can be extracted when needed.
 
 **Why Redis for round state?**
-The round state changes every second and is read by hundreds of players simultaneously. PostgreSQL would be overwhelmed by this frequency. Redis serves the hot data; PostgreSQL stores the permanent record after each round ends.
+The round state changes every second and is read by all connected players simultaneously. PostgreSQL would be overwhelmed. Redis serves the hot data; PostgreSQL stores the permanent record after each round.
 
 **Why queue for payouts instead of direct HTTP?**
 If the server crashes mid-payout, HTTP calls are lost. Queue messages survive failures and are redelivered. Combined with idempotency keys, this guarantees every winner is paid exactly once.
@@ -220,24 +295,87 @@ If the server crashes mid-payout, HTTP calls are lost. Queue messages survive fa
 **Why pessimistic locking on wallet debits?**
 Two concurrent bet requests could both read the same balance and both succeed, resulting in a negative balance. Pessimistic locking serializes access to the wallet row, preventing race conditions on financial data.
 
+**Why Outbox pattern?**
+Without it, a server crash between a database write and a queue publish would lose the event permanently. The Outbox pattern writes the event to the database in the same transaction as the business data, then a background process publishes it to the queue.
+
+**Why a separate Rust RNG service?**
+In regulated iGaming markets, the RNG must be auditable, isolated, and provably fair. A dedicated Rust service provides cryptographic guarantees and can be independently certified. Communication via gRPC ensures type-safe, high-performance calls.
+
+**Why one Round Worker per table?**
+Isolation — if one worker crashes, only that table is affected. Scalability — adding more tables means adding more worker instances, not making one worker bigger.
+
+**Why simplified roulette bet types?**
+Starting with even chance bets only (red/black, odd/even, low/high) delivers a fully working game faster. The architecture supports adding more bet types (straight, dozens, columns) as a second iteration without changing any infrastructure.
+
+---
+
+## Trade-offs
+
+| Decision | Chosen | Alternative | Reason |
+|---|---|---|---|
+| Architecture | Modular Monolith | Microservices | Lower operational overhead for solo development |
+| Round state | Redis | PostgreSQL | Speed — changes every second, read by hundreds |
+| Payout delivery | Queue | Direct HTTP | Reliability — survives server crashes |
+| Wallet locking | Pessimistic | Optimistic | Financial data — no race conditions acceptable |
+| Event publishing | Outbox | Direct publish | Consistency — no lost events |
+| RNG | Rust service | In-process | Isolation, auditability, provably fair |
+| Roulette scope | Even chance bets | Full bet types | Ship working game faster, extend incrementally |
+
+---
+
+## Failure Scenarios
+
+| Scenario | Behavior |
+|---|---|
+| Wallet Service down during payout | Message stays in queue, retried automatically |
+| Message delivered twice | Idempotency key blocks duplicate credit |
+| Server crashes between DB write and queue publish | Outbox pattern replays the event on restart |
+| Round Worker crashes mid-round | Round state in Redis survives, worker restarts and recovers |
+| Redis down | Round state falls back to PostgreSQL, round continues with degraded performance |
+| Player disconnects during round | Round continues, result applied to wallet regardless |
+
+---
+
+## What I'd Improve in Production
+
+- **Kubernetes** — replace Docker Compose with K8s for true horizontal scaling and self-healing
+- **Real payment provider** — integrate Stripe or Pix, replace FakePaymentProvider
+- **Full roulette bet types** — add straight (35:1), dozens (2:1), columns (2:1)
+- **Multi-currency** — one wallet per currency per player
+- **KYC verification** — identity verification for regulated markets
+- **RNG certification** — submit Rust RNG service for independent testing lab certification
+- **Kafka** — replace RabbitMQ for higher throughput scenarios
+- **PostgreSQL read replica** — offload read pressure from primary
+
 ---
 
 ## Roadmap
 
-- [ ] Slots game (solo, instant result)
-- [ ] Aviator crash game
+- [ ] Full roulette bet types (straight, dozens, columns)
+- [ ] Slots game — solo, instant result, no Round Worker needed
+- [ ] Admin analytics dashboard
 - [ ] Real payment provider (Stripe / Pix)
 - [ ] Multi-currency support
 - [ ] Kubernetes deployment
-- [ ] Admin analytics dashboard
+- [ ] RNG certification
+
+---
+
+## Related Repositories
+
+| Repository | Description |
+|---|---|
+| [CarameloBet](https://github.com/iuredev/CarameloBet) | Backend — ASP.NET Core .NET 10 |
+| [CarameloBet-Web](https://github.com/iuredev/CarameloBet-Web) | Frontend — Next.js 15 |
+| [CarameloBet-RNG](https://github.com/iuredev/CarameloBet-RNG) | RNG Service — Rust + gRPC |
 
 ---
 
 ## Author
 
-**Iure** — Full Stack Developer  
-[GitHub](https://github.com/iuredev) · [LinkedIn](https://linkedin.com/in/iure-silva) · [Portfolio](https://iure.dev)
+**Iure** — Full Stack Developer
+[GitHub](https://github.com/iuredev) · [LinkedIn](https://linkedin.com/in/iuredev)
 
 ---
 
-*Built as a portfolio project to demonstrate production-grade system design and .NET development for the European iGaming market.*
+*Built as a portfolio project to demonstrate production-grade system design, distributed systems, and .NET development for the European iGaming market.*
