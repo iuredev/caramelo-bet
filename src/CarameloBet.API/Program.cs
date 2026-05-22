@@ -7,6 +7,7 @@ using FluentValidation;
 using MapsterMapper;
 using CarameloBet.API.Middlewares;
 using CarameloBet.API.Models;
+using CarameloBet.API.Extensions;
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
 
@@ -77,12 +78,15 @@ try
 
     // Mapster
     builder.Services.AddScoped<IMapper, Mapper>();
-
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
     builder.Services.AddProblemDetails();
     // Add services to the container.
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
+
+    // Database
+    builder.Services.AddDatabaseContexts(builder.Configuration);
+
 
     var app = builder.Build();
 
@@ -114,7 +118,6 @@ try
         {
             throw new Exception();
         });
-
     app.MapGet("/api", () => ApiResponse<string>.Ok("V1 API is running"));
     app.MapGet("/health", () => ApiResponse<string>.Ok("CarameloBet API is running"));
     app.Run();
