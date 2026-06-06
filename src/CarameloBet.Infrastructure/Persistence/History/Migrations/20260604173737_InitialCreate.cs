@@ -19,43 +19,43 @@ namespace CarameloBet.Infrastructure.Persistence.History.Migrations
                 schema: "history",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    EventType = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: true),
-                    TableId = table.Column<Guid>(type: "uuid", nullable: true),
-                    RoundId = table.Column<Guid>(type: "uuid", nullable: true),
-                    BetId = table.Column<Guid>(type: "uuid", nullable: true),
-                    Payload = table.Column<string>(type: "jsonb", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    event_type = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    user_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    table_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    round_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    bet_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    payload = table.Column<string>(type: "jsonb", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_events", x => x.Id);
+                    table.PrimaryKey("pk_events", x => x.id);
                 });
 
             migrationBuilder.CreateIndex(
                 name: "idx_events_created_at",
                 schema: "history",
                 table: "events",
-                column: "CreatedAt");
+                column: "created_at");
 
             migrationBuilder.CreateIndex(
                 name: "idx_events_event_type",
                 schema: "history",
                 table: "events",
-                column: "EventType");
+                column: "event_type");
 
             migrationBuilder.CreateIndex(
                 name: "idx_events_round_id",
                 schema: "history",
                 table: "events",
-                column: "RoundId");
+                column: "round_id");
 
             migrationBuilder.CreateIndex(
                 name: "idx_events_user_id",
                 schema: "history",
                 table: "events",
-                column: "UserId");
+                column: "user_id");
         }
 
         /// <inheritdoc />

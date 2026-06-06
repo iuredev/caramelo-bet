@@ -15,16 +15,24 @@ public static class DatabaseExtensions
         var connectionString = configuration.GetConnectionString("PostgreSQL");
 
         services.AddDbContext<AuthDbContext>(options =>
-            options.UseNpgsql(connectionString));
+            options.UseNpgsql(connectionString,
+                    o => o.MigrationsHistoryTable("__auth_migrations_history"))
+                .UseSnakeCaseNamingConvention());
 
         services.AddDbContext<WalletDbContext>(options =>
-            options.UseNpgsql(connectionString));
+            options.UseNpgsql(connectionString,
+                    o => o.MigrationsHistoryTable("__wallet_migrations_history"))
+                .UseSnakeCaseNamingConvention());
 
         services.AddDbContext<GameDbContext>(options =>
-            options.UseNpgsql(connectionString));
+            options.UseNpgsql(connectionString,
+                    o => o.MigrationsHistoryTable("__game_migrations_history"))
+                .UseSnakeCaseNamingConvention());
 
         services.AddDbContext<HistoryDbContext>(options =>
-            options.UseNpgsql(connectionString));
+            options.UseNpgsql(connectionString,
+                    o => o.MigrationsHistoryTable("__history_migrations_history"))
+                .UseSnakeCaseNamingConvention());
 
         return services;
     }

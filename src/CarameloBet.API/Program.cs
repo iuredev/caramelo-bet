@@ -8,6 +8,9 @@ using MapsterMapper;
 using CarameloBet.API.Middlewares;
 using CarameloBet.API.Models;
 using CarameloBet.API.Extensions;
+using CarameloBet.Infrastructure.Persistence;
+using CarameloBet.Infrastructure.Persistence.Auth;
+using CarameloBet.Infrastructure.Persistence.Game;
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
 
@@ -120,6 +123,18 @@ try
         });
     app.MapGet("/api", () => ApiResponse<string>.Ok("V1 API is running"));
     app.MapGet("/health", () => ApiResponse<string>.Ok("CarameloBet API is running"));
+
+
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var authContext = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+        var gameContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+
+        await SeedData.SeedAsync(authContext, gameContext);
+    }
+
+
     app.Run();
 }
 catch (Exception ex)
