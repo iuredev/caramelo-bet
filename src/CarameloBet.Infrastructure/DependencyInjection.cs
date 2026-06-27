@@ -1,14 +1,32 @@
+using CarameloBet.Application.Abstractions;
 using CarameloBet.Infrastructure.Persistence.Auth;
-using CarameloBet.Infrastructure.Persistence.Wallet;
 using CarameloBet.Infrastructure.Persistence.Game;
 using CarameloBet.Infrastructure.Persistence.History;
+using CarameloBet.Infrastructure.Persistence.Wallet;
+using CarameloBet.Infrastructure.Repositories.Auth;
+using CarameloBet.Infrastructure.Services.Auth;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace CarameloBet.API.Extensions;
+namespace CarameloBet.Infrastructure;
 
-public static class DatabaseExtensions
+public static class DependencyInjection
 {
-    public static IServiceCollection AddDatabaseContexts(
+    public static IServiceCollection AddInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddDatabaseContexts(configuration);
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IPasswordHasher, PasswordHasher>();
+        services.AddScoped<IJwtService, JwtService>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddDatabaseContexts(
         this IServiceCollection services,
         IConfiguration configuration)
     {

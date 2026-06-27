@@ -19,16 +19,39 @@ public class GlobalExceptionHandler : IExceptionHandler
         CancellationToken cancellationToken
     )
     {
-        _logger.LogError(exception, "Unhandled exception: {Message}", exception.Message);
+        if (exception is ApplicationException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            _logger.LogWarning(exception, "Handled request exception: {Message}", exception.Message);
+        }
+        else
+        {
+            _logger.LogError(exception, "Unhandled exception: {Message}", exception.Message);
+        }
+
+        var statusCode = exception switch
+        {
+            ApplicationException => StatusCodes.Status400BadRequest,
+            UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
+            InvalidOperationException => StatusCodes.Status403Forbidden,
+            _ => StatusCodes.Status500InternalServerError
+        };
+
+        var title = statusCode switch
+        {
+            StatusCodes.Status400BadRequest => "Invalid request",
+            StatusCodes.Status401Unauthorized => "Unauthorized",
+            StatusCodes.Status403Forbidden => "Forbidden",
+            _ => "An unexpected error occurred"
+        };
 
         var problemDetails = new ProblemDetails
         {
-            Status = StatusCodes.Status500InternalServerError,
-            Title = "An unexpected error occurred",
-            Type = "https://tools.ietf.org/html/rfc9110#section-15.6.1",
+            Status = statusCode,
+            Title = title,
+            Detail = exception.Message
         };
 
-        httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        httpContext.Response.StatusCode = statusCode;
 
         await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
 

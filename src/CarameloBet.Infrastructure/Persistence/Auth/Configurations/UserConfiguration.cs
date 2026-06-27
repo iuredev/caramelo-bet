@@ -4,22 +4,30 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CarameloBet.Infrastructure.Persistence.Auth.Configurations;
 
-public class UserConfiguration : IEntityTypeConfiguration<Role>
+public class UserConfiguration : IEntityTypeConfiguration<User>
 {
-    public void Configure(EntityTypeBuilder<Role> builder)
+    public void Configure(EntityTypeBuilder<User> builder)
     {
-        builder.ToTable("roles");
-        builder.HasKey(r => r.Id);
+        builder.ToTable("users");
+        builder.HasKey(u => u.Id);
 
-        builder.Property(r => r.Name)
+        builder.Property(u => u.Name)
+            .IsRequired()
+            .HasMaxLength(100);
+
+        builder.Property(u => u.Email)
+            .IsRequired()
+            .HasMaxLength(255);
+
+        builder.Property(u => u.PasswordHash)
+            .IsRequired();
+
+        builder.Property(u => u.Status)
             .IsRequired()
             .HasMaxLength(50);
 
-        builder.Property(r => r.Description)
-            .HasMaxLength(255);
-
-        builder.HasIndex(r => r.Name)
+        builder.HasIndex(u => u.Email)
             .IsUnique()
-            .HasDatabaseName("idx_roles_name");
+            .HasDatabaseName("idx_users_email");
     }
 }

@@ -5,12 +5,16 @@ using Prometheus;
 using MassTransit;
 using FluentValidation;
 using MapsterMapper;
+using CarameloBet.Application;
 using CarameloBet.API.Middlewares;
 using CarameloBet.API.Models;
-using CarameloBet.API.Extensions;
 using CarameloBet.Infrastructure.Persistence;
 using CarameloBet.Infrastructure.Persistence.Auth;
 using CarameloBet.Infrastructure.Persistence.Game;
+using CarameloBet.Infrastructure;
+using CarameloBet.API.Endpoints;
+using CarameloBet.Application.Validators.Auth;
+
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
 
@@ -77,7 +81,7 @@ try
         });
 
     //FluentValidation
-    builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+    builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 
     // Mapster
     builder.Services.AddScoped<IMapper, Mapper>();
@@ -87,8 +91,8 @@ try
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
 
-    // Database
-    builder.Services.AddDatabaseContexts(builder.Configuration);
+    builder.Services.AddApplication();
+    builder.Services.AddInfrastructure(builder.Configuration);
 
 
     var app = builder.Build();
@@ -116,7 +120,6 @@ try
         {
             return "Hello, World!";
         });
-
     app.MapGet("/test-error", () =>
         {
             throw new Exception();
@@ -124,6 +127,7 @@ try
     app.MapGet("/api", () => ApiResponse<string>.Ok("V1 API is running"));
     app.MapGet("/health", () => ApiResponse<string>.Ok("CarameloBet API is running"));
 
+    app.MapAuthEndpoints();
 
 
     using (var scope = app.Services.CreateScope())
