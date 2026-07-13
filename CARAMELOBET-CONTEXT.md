@@ -1,6 +1,6 @@
 # CarameloBet — Complete Project Context
 
-> Handoff document with all context to continue work in any chat session. Contains everything: project context, Phase 1 details, and detailed plans for Phases 2-8.
+> Handoff document with all context to continue work in any chat session. Contains everything: project context, completed Phases 1-2, and detailed plans for Phases 3-8.
 
 ---
 
@@ -15,7 +15,7 @@
 7. [API Contracts](#api-contracts)
 8. [Reliability Patterns](#reliability-patterns)
 9. [Phase 1 — Foundation (COMPLETE)](#phase-1--foundation-complete)
-10. [Phase 2 — Auth Service](#phase-2--auth-service)
+10. [Phase 2 — Auth Service (COMPLETE)](#phase-2--auth-service--complete-)
 11. [Phase 3 — Wallet Service](#phase-3--wallet-service)
 12. [Phase 4 — Game Service](#phase-4--game-service)
 13. [Phase 5 — Round Worker + Rust RNG](#phase-5--round-worker--rust-rng)
@@ -322,14 +322,13 @@ Background process publishes to RabbitMQ
 ✅ Seed data (4 roles, 8 permissions, 2 games, 3 tables)
 ```
 
-### Credentials (development)
+### Local Secret Configuration
 
 ```
-PostgreSQL: caramelo / caramelo123 / caramelo_bet
-RabbitMQ: caramelo / caramelo123
-Seq admin password: caramelo123
-Grafana: admin / caramelo123
-JWT Secret: caramelo-bet-super-secret-key-32chars (in User Secrets)
+Copy `.env.example` to `.env` and provide local-only values.
+Set `Jwt__Secret` with at least 32 random bytes.
+Set `ConnectionStrings__PostgreSQL` with the local PostgreSQL credentials.
+Never commit `.env`, real passwords, or JWT secrets.
 ```
 
 ### Service URLs (local)
@@ -348,7 +347,7 @@ http://localhost:5540     → RedisInsight
 
 ---
 
-## Phase 2 — Auth Service
+## Phase 2 — Auth Service — COMPLETE ✅
 
 **Estimated time: 1-2 weeks**
 
@@ -496,12 +495,22 @@ public static class AuthEndpoints
 
 ### Phase 2 deliverables
 
-- All 17 endpoints working
-- JWT validation on protected endpoints (via Gateway)
-- Password reset email flow
-- Admin endpoints with proper RBAC checks
-- Unit tests for Domain (entities)
-- Unit tests for Application (use cases with mocked repos)
+- [x] All 17 endpoints working
+- [x] JWT validation on protected endpoints in the API and Gateway
+- [x] Password reset email flow
+- [x] Admin endpoints with proper RBAC checks
+- [x] Registration atomically assigns the player role and creates a zero-balance wallet
+- [x] Unit tests for Domain entities
+- [x] Unit tests for Application use cases with fake repositories
+
+### Phase 2 verification
+
+Completed on 2026-07-13:
+
+- Clean PostgreSQL database migrated successfully for all four DbContexts
+- 22 smoke assertions passed across all 17 endpoints, JWT, RBAC, refresh rotation, logout, password reset, and registration side effects
+- Full solution test suite passed
+- Secret-pattern scan and `git diff --check` passed
 
 ---
 
@@ -1133,7 +1142,7 @@ Use v8.3.6 specifically.
 Use `PGDATA: /var/lib/postgresql/data/pgdata` in docker-compose.
 
 ### 3. Seq requires admin password
-Set `SEQ_FIRSTRUN_ADMINPASSWORD: caramelo123` environment variable.
+Set the `SEQ_FIRSTRUN_ADMINPASSWORD` environment variable locally.
 
 ### 4. Jaeger v2 SPM configuration
 Requires complex YAML config with `jaeger_storage`, `jaeger_query`, `spanmetrics` connector.
@@ -1270,7 +1279,7 @@ DROP SCHEMA history CASCADE;
 
 When starting a new chat, paste this:
 
-> I'm continuing work on CarameloBet — a multiplayer iGaming platform built with .NET 10, Go, and Rust. Phase 1 — Foundation is complete (all infrastructure, observability, gateway, database migrations, seed data done). I'm currently in Phase 2 — Auth Service. I have the full context document attached with all 8 phases detailed. Please respond in English only, use no em-dashes, and follow the patterns established in Phase 1.
+> I'm continuing work on CarameloBet, a multiplayer iGaming platform built with .NET 10, Go, and Rust. Phases 1 and 2 are complete, including infrastructure, observability, authentication, JWT, refresh tokens, password reset, user profiles, RBAC administration, security hardening, migrations, and tests. I'm starting Phase 3, the Wallet Service. I have the full context document attached with all 8 phases detailed. Please respond in English only, use no em-dashes, and follow the patterns established in the completed phases.
 
 Then attach this file.
 
@@ -1280,7 +1289,7 @@ Then attach this file.
 
 | Phase | Estimated time |
 |---|---|
-| Phase 2 — Auth | 1-2 weeks |
+| Phase 2 — Auth | Complete |
 | Phase 3 — Wallet | 1 week |
 | Phase 4 — Game | 1-2 weeks |
 | Phase 5 — Worker + Rust RNG | 2-3 weeks |
@@ -1288,8 +1297,8 @@ Then attach this file.
 | Phase 7 — Frontend + Go WS | 2-3 weeks |
 | Phase 8 — Polish + Tests + Deploy | 1-2 weeks |
 
-**Total remaining: ~10-15 weeks of consistent work**
+**Total remaining: ~8-13 weeks of consistent work**
 
 ---
 
-*Last updated: Phase 2 start — about to verify migrations after snake_case conversion, then build user registration endpoint.*
+*Last updated: 2026-07-13. Phase 2 Auth complete and verified. Next step: Phase 3 Wallet Service.*

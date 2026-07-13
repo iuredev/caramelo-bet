@@ -14,8 +14,7 @@ public class RegisterUseCase(IUserRepository userRepo, IPasswordHasher passwordH
 
         var user = User.Create(request.Name, request.Email, passwordHash, request.BirthDate);
 
-        await userRepo.AddAsync(user);
-        await userRepo.SaveChangesAsync();
+        await userRepo.RegisterPlayerAsync(user);
 
         return new RegisterResponse(
             user.Id,

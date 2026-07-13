@@ -23,10 +23,15 @@ public class JwtService(IConfiguration configuration) : IJwtService
     {
         AccessTokenExpiresAt = DateTime.UtcNow.AddMinutes(AccessTokenExpiryMinutes);
 
-        var secret = configuration["Jwt:Secret"]
-            ?? "caramelo-bet-super-secret-key-32chars";
-        var issuer = configuration["Jwt:Issuer"] ?? "CarameloBet";
-        var audience = configuration["Jwt:Audience"] ?? "CarameloBet";
+        var secret = GetRequiredSetting("Jwt:Secret");
+        var issuer = GetRequiredSetting("Jwt:Issuer");
+        var audience = GetRequiredSetting("Jwt:Audience");
+
+        if (Encoding.UTF8.GetByteCount(secret) < 32)
+        {
+            throw new InvalidOperationException("Jwt:Secret must be at least 32 bytes.");
+        }
+
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
 
@@ -60,5 +65,10 @@ public class JwtService(IConfiguration configuration) : IJwtService
     {
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken));
         return Convert.ToHexString(bytes);
+    }
+
+    private string GetRequiredSetting(string key)
+    {
+        return configuration[key] ?? throw new InvalidOperationException($"{key} is required.");
     }
 }

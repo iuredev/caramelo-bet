@@ -19,6 +19,12 @@ public class Role
             CreatedAt = DateTime.UtcNow
         };
     }
+
+    public void Update(string name, string description)
+    {
+        Name = name;
+        Description = description;
+    }
 }
 
 public class UserRole

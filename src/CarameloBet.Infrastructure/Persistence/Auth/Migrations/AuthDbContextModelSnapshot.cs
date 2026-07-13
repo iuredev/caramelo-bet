@@ -209,12 +209,14 @@ namespace CarameloBet.Infrastructure.Persistence.Auth.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("email");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("name");
 
                     b.Property<string>("PasswordHash")
@@ -224,7 +226,8 @@ namespace CarameloBet.Infrastructure.Persistence.Auth.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("status");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -233,6 +236,10 @@ namespace CarameloBet.Infrastructure.Persistence.Auth.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_users");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("idx_users_email");
 
                     b.ToTable("users", "auth");
                 });

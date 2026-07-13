@@ -14,8 +14,8 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
         RuleFor(input => input.Email).NotEmpty().WithMessage("Email is required")
             .EmailAddress().WithMessage("Invalid email address");
 
-        RuleFor(input => input.Password).NotEmpty().WithMessage("Password is required")
-            .MinimumLength(6).WithMessage("Password must be at least 6 characters");
+        RuleFor(input => input.Password)
+            .ApplyPasswordPolicy();
 
     }
 }

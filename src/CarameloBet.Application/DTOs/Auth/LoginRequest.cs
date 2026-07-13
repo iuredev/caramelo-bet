@@ -18,3 +18,27 @@ public record LoginResponse(
     DateTime AccessTokenExpiresAt,
     AuthenticatedUserResponse User
 );
+
+public record RefreshTokenRequest(
+    string RefreshToken
+);
+
+public record RefreshTokenResponse(
+    string AccessToken,
+    string RefreshToken,
+    DateTime AccessTokenExpiresAt,
+    AuthenticatedUserResponse User
+);
+
+public record LogoutRequest(
+    string RefreshToken
+);
+
+public record ForgotPasswordRequest(
+    string Email
+);
+
+public record ResetPasswordRequest(
+    string Token,
+    string NewPassword
+);

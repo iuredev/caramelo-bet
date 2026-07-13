@@ -27,4 +27,24 @@ public class User
             UpdatedAt = DateTime.UtcNow
         };
     }
+
+    public void ChangePassword(string passwordHash)
+    {
+        PasswordHash = passwordHash;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateProfile(string name, string email, DateOnly? birthdate)
+    {
+        Name = name;
+        Email = email;
+        Birthdate = birthdate;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateStatus(string status)
+    {
+        Status = status;
+        UpdatedAt = DateTime.UtcNow;
+    }
 };

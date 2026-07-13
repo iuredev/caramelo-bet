@@ -10,6 +10,6 @@ public interface IUserRepository
     Task<IReadOnlyCollection<string>> GetRolesAsync(Guid userId);
     Task<IReadOnlyCollection<string>> GetPermissionsAsync(Guid userId);
     Task<bool> EmailExistsAsync(string email);
-    Task AddAsync(User user);
+    Task RegisterPlayerAsync(User user);
     Task SaveChangesAsync();
 }

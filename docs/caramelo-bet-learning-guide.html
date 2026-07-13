@@ -1,0 +1,1371 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CarameloBet Learning Guide</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fb;
+      --panel: #ffffff;
+      --panel-soft: #f1f5f9;
+      --text: #172033;
+      --muted: #5b6577;
+      --line: #d9e0ea;
+      --accent: #0f766e;
+      --accent-dark: #115e59;
+      --code-bg: #111827;
+      --code-text: #e5e7eb;
+      --warn-bg: #fff7ed;
+      --warn-line: #fed7aa;
+      --ok-bg: #ecfdf5;
+      --ok-line: #a7f3d0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a {
+      color: var(--accent-dark);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      border-right: 1px solid var(--line);
+      background: var(--panel);
+      padding: 24px 20px;
+    }
+
+    aside h1 {
+      margin: 0 0 8px;
+      font-size: 20px;
+      line-height: 1.25;
+    }
+
+    aside p {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    nav {
+      display: grid;
+      gap: 4px;
+    }
+
+    nav a {
+      display: block;
+      padding: 8px 10px;
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    nav a:hover {
+      background: var(--panel-soft);
+      text-decoration: none;
+    }
+
+    main {
+      max-width: 1120px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 48px 40px 80px;
+    }
+
+    header {
+      margin-bottom: 36px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    header h2 {
+      margin: 0 0 12px;
+      font-size: clamp(32px, 4vw, 54px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    header p {
+      margin: 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    section {
+      margin: 40px 0;
+      padding: 28px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    section h2 {
+      margin: 0 0 16px;
+      font-size: 28px;
+      line-height: 1.2;
+    }
+
+    section h3 {
+      margin: 28px 0 10px;
+      font-size: 20px;
+      line-height: 1.3;
+    }
+
+    section h4 {
+      margin: 24px 0 8px;
+      font-size: 16px;
+      line-height: 1.35;
+    }
+
+    p {
+      margin: 10px 0;
+    }
+
+    ul,
+    ol {
+      padding-left: 22px;
+    }
+
+    li {
+      margin: 6px 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .note,
+    .warning {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border-radius: 8px;
+    }
+
+    .note {
+      background: var(--ok-bg);
+      border: 1px solid var(--ok-line);
+    }
+
+    .warning {
+      background: var(--warn-bg);
+      border: 1px solid var(--warn-line);
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 16px 0 0;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    code {
+      font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+      font-size: 0.95em;
+    }
+
+    :not(pre) > code {
+      padding: 2px 5px;
+      border-radius: 5px;
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+    }
+
+    pre {
+      margin: 14px 0 20px;
+      overflow-x: auto;
+      padding: 18px;
+      border-radius: 8px;
+      background: var(--code-bg);
+      color: var(--code-text);
+      line-height: 1.5;
+      tab-size: 4;
+    }
+
+    pre code {
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    th,
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--panel-soft);
+      font-weight: 700;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .flow {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .flow div {
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-soft);
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        display: block;
+      }
+
+      aside {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      main {
+        padding: 32px 18px 56px;
+      }
+
+      section {
+        padding: 22px 18px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside>
+      <h1>CarameloBet Guide</h1>
+      <p>Everything applied so far: structure, syntax, auth, EF Core, DI, endpoints, and tests.</p>
+      <nav aria-label="Table of contents">
+        <a href="#status">Current Status</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#folders">Folder Structure</a>
+        <a href="#csharp">C# Syntax</a>
+        <a href="#domain">Domain Layer</a>
+        <a href="#application">Application Layer</a>
+        <a href="#infrastructure">Infrastructure Layer</a>
+        <a href="#api">API Layer</a>
+        <a href="#gateway">Gateway</a>
+        <a href="#auth-flow">Auth Flow</a>
+        <a href="#tests">Tests</a>
+        <a href="#commands">Commands</a>
+        <a href="#next">What Comes Next</a>
+      </nav>
+    </aside>
+
+    <main>
+      <header>
+        <h2>CarameloBet Learning Guide</h2>
+        <p>
+          This page explains the patterns already applied in the project up to Phase 2:
+          Clean-ish layering, Minimal APIs, use cases, repositories, EF Core, JWT auth,
+          refresh tokens, password reset, current user endpoints, dependency injection,
+          validators, and tests.
+        </p>
+        <div class="pill-row">
+          <span class="pill">.NET 10</span>
+          <span class="pill">ASP.NET Core</span>
+          <span class="pill">EF Core</span>
+          <span class="pill">PostgreSQL</span>
+          <span class="pill">JWT</span>
+          <span class="pill">FluentValidation</span>
+          <span class="pill">xUnit</span>
+          <span class="pill">YARP Gateway</span>
+        </div>
+      </header>
+
+      <section id="status">
+        <h2>1. Current Status</h2>
+        <p>
+          Phases 1 and 2 are complete. The project now has the foundation plus the
+          complete Auth Service: registration, JWT, refresh tokens, password reset,
+          user profiles, admin user management, role management, RBAC, and security hardening.
+        </p>
+
+        <h3>Selected Auth Endpoints</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Endpoint</th>
+              <th>Purpose</th>
+              <th>Main Concepts</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>POST /api/auth/register</code></td>
+              <td>Create a user</td>
+              <td>DTO, validator, use case, password hashing, repository</td>
+            </tr>
+            <tr>
+              <td><code>POST /api/auth/login</code></td>
+              <td>Authenticate user</td>
+              <td>BCrypt verify, JWT, refresh token persistence</td>
+            </tr>
+            <tr>
+              <td><code>POST /api/auth/refresh</code></td>
+              <td>Rotate refresh token</td>
+              <td>Hashed token lookup, revoke old token, issue new token</td>
+            </tr>
+            <tr>
+              <td><code>POST /api/auth/logout</code></td>
+              <td>Revoke refresh token</td>
+              <td>Token hash, soft revocation</td>
+            </tr>
+            <tr>
+              <td><code>POST /api/auth/forgot-password</code></td>
+              <td>Start password reset</td>
+              <td>Secure token generation, email sender abstraction</td>
+            </tr>
+            <tr>
+              <td><code>POST /api/auth/reset-password</code></td>
+              <td>Finish password reset</td>
+              <td>Validate token, change password, mark token used</td>
+            </tr>
+            <tr>
+              <td><code>GET /api/users/me</code></td>
+              <td>Read current user profile</td>
+              <td>JWT claims, protected endpoint, use case</td>
+            </tr>
+            <tr>
+              <td><code>PUT /api/users/me</code></td>
+              <td>Update current user profile</td>
+              <td>Authorization, validation, entity mutation</td>
+            </tr>
+            <tr>
+              <td><code>PUT /api/users/me/password</code></td>
+              <td>Change current password</td>
+              <td>Password verification and hashing</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="note">
+          <strong>Current result:</strong> all 17 Phase 2 endpoints are implemented and verified. This includes the nine routes above plus eight admin user and role management routes protected by the <code>AdminOnly</code> policy.
+        </div>
+      </section>
+
+      <section id="architecture">
+        <h2>2. Architecture</h2>
+        <p>
+          CarameloBet uses a modular monolith style for the .NET backend. The code is split by responsibility instead of putting everything inside controllers.
+        </p>
+
+        <div class="flow">
+          <div><strong>API</strong>: receives HTTP requests and maps endpoints.</div>
+          <div><strong>Application</strong>: holds use cases, DTOs, validators, and abstractions.</div>
+          <div><strong>Domain</strong>: holds business entities and domain behavior.</div>
+          <div><strong>Infrastructure</strong>: implements persistence, repositories, JWT, hashing, email, and external services.</div>
+          <div><strong>Gateway</strong>: YARP reverse proxy, route authorization, rate limiting.</div>
+        </div>
+
+        <h3>Dependency Direction</h3>
+        <pre><code>Domain
+  ^
+  |
+Application
+  ^
+  |
+Infrastructure
+  ^
+  |
+API / Workers
+
+Gateway is separate and proxies requests to API.</code></pre>
+
+        <p>
+          The important idea is that the Application layer defines what it needs through interfaces.
+          Infrastructure implements those interfaces. This keeps business logic independent from EF Core, Resend, BCrypt, and other tools.
+        </p>
+      </section>
+
+      <section id="folders">
+        <h2>3. Folder Structure</h2>
+        <p>
+          These are the folders used so far and why they exist.
+        </p>
+
+        <pre><code>src/
+  CarameloBet.Domain/
+    Entities/
+      Auth/
+        User.cs
+        Role.cs
+        Permission.cs
+        Tokens.cs
+
+  CarameloBet.Application/
+    Abstractions/
+      IUserRepository.cs
+      IJwtService.cs
+      IPasswordHasher.cs
+      IRefreshTokenRepository.cs
+      IPasswordResetTokenRepository.cs
+      ISecureTokenService.cs
+      IPasswordResetEmailSender.cs
+
+    DTOs/
+      Auth/
+        RegisterRequest.cs
+        LoginRequest.cs
+        UserProfileRequest.cs
+
+    UseCases/
+      Auth/
+        RegisterUseCase.cs
+        LoginUseCase.cs
+        RefreshTokenUseCase.cs
+        LogoutUseCase.cs
+        ForgotPasswordUseCase.cs
+        ResetPasswordUseCase.cs
+        GetCurrentUserUseCase.cs
+        UpdateCurrentUserUseCase.cs
+        ChangeCurrentUserPasswordUseCase.cs
+
+    Validators/
+      Auth/
+        RegisterRequestValidator.cs
+        LoginRequestValidator.cs
+        UpdateCurrentUserRequestValidator.cs
+
+  CarameloBet.Infrastructure/
+    Persistence/
+      Auth/
+        AuthDbContext.cs
+        Configurations/
+        Migrations/
+
+    Repositories/
+      Auth/
+        UserRepository.cs
+        RefreshTokenRepository.cs
+        PasswordResetTokenRepository.cs
+
+    Services/
+      Auth/
+        JwtService.cs
+        PasswordHasher.cs
+        SecureTokenService.cs
+        PasswordResetEmailSender.cs
+
+  CarameloBet.API/
+    Endpoints/
+      AuthEndpoints.cs
+      UserEndpoints.cs
+    Middlewares/
+      GlobalExceptionHandler.cs
+      JwtMiddleware.cs
+    Program.cs
+
+  CarameloBet.Gateway/
+    Program.cs
+    Middlewares/
+      JwtMiddleware.cs
+      RateLimiting.cs
+
+tests/
+  CarameloBet.Application.Tests/
+    AuthUseCaseTests.cs</code></pre>
+
+        <h3>How to Decide Where Code Goes</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Question</th>
+              <th>Folder</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Is it a business object like User or RefreshToken?</td>
+              <td><code>Domain/Entities</code></td>
+            </tr>
+            <tr>
+              <td>Is it a user action like login, refresh, update profile?</td>
+              <td><code>Application/UseCases</code></td>
+            </tr>
+            <tr>
+              <td>Is it request or response data?</td>
+              <td><code>Application/DTOs</code></td>
+            </tr>
+            <tr>
+              <td>Is it input validation?</td>
+              <td><code>Application/Validators</code></td>
+            </tr>
+            <tr>
+              <td>Is it a contract the app needs?</td>
+              <td><code>Application/Abstractions</code></td>
+            </tr>
+            <tr>
+              <td>Is it EF Core, JWT, BCrypt, Resend, Redis, RabbitMQ?</td>
+              <td><code>Infrastructure</code></td>
+            </tr>
+            <tr>
+              <td>Is it HTTP route mapping?</td>
+              <td><code>API/Endpoints</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="csharp">
+        <h2>4. C# Syntax Used So Far</h2>
+
+        <h3>Namespaces</h3>
+        <p>
+          A namespace organizes classes and avoids name conflicts. The project uses file scoped namespaces.
+        </p>
+        <pre><code>namespace CarameloBet.Application.UseCases.Auth;
+
+public class LoginUseCase
+{
+}</code></pre>
+
+        <h3>Classes</h3>
+        <p>
+          Classes define behavior and state. Use cases, repositories, and services are classes.
+        </p>
+        <pre><code>public class LoginUseCase
+{
+    public async Task&lt;LoginResponse&gt; ExecuteAsync(LoginRequest request)
+    {
+        // business flow here
+    }
+}</code></pre>
+
+        <h3>Primary Constructors</h3>
+        <p>
+          This project uses C# primary constructors for dependency injection.
+        </p>
+        <pre><code>public class LoginUseCase(
+    IUserRepository userRepository,
+    IPasswordHasher passwordHasher,
+    IJwtService jwtService,
+    IRefreshTokenRepository refreshTokenRepository)
+{
+    public async Task&lt;LoginResponse&gt; ExecuteAsync(LoginRequest request)
+    {
+        var user = await userRepository.GetByEmailAsync(request.Email);
+    }
+}</code></pre>
+
+        <p>
+          This is similar to writing a constructor manually, but shorter.
+        </p>
+        <pre><code>public class LoginUseCase
+{
+    private readonly IUserRepository _userRepository;
+
+    public LoginUseCase(IUserRepository userRepository)
+    {
+        _userRepository = userRepository;
+    }
+}</code></pre>
+
+        <h3>Records</h3>
+        <p>
+          Records are good for DTOs because they are simple data carriers.
+        </p>
+        <pre><code>public record LoginRequest(
+    string Email,
+    string Password
+);
+
+public record LoginResponse(
+    string AccessToken,
+    string RefreshToken,
+    DateTime AccessTokenExpiresAt,
+    AuthenticatedUserResponse User
+);</code></pre>
+
+        <h3>Interfaces</h3>
+        <p>
+          Interfaces define contracts. Application depends on interfaces, not concrete infrastructure classes.
+        </p>
+        <pre><code>public interface IUserRepository
+{
+    Task&lt;User?&gt; GetByIdAsync(Guid id);
+    Task&lt;User?&gt; GetByEmailAsync(string email);
+    Task AddAsync(User user);
+    Task SaveChangesAsync();
+}</code></pre>
+
+        <h3>Nullable Types</h3>
+        <p>
+          The question mark means a value can be null.
+        </p>
+        <pre><code>public DateOnly? Birthdate { get; private set; }
+
+public async Task&lt;User?&gt; GetByEmailAsync(string email)
+{
+    return await context.Users.FirstOrDefaultAsync(user =&gt; user.Email == email);
+}</code></pre>
+
+        <h3>Async and Await</h3>
+        <p>
+          Database calls and external service calls are asynchronous. A method returning <code>Task</code> can be awaited.
+        </p>
+        <pre><code>public async Task&lt;User?&gt; GetByIdAsync(Guid id)
+{
+    return await context.Users.FindAsync(id);
+}</code></pre>
+
+        <h3>Generics</h3>
+        <p>
+          Generics let one type work with different data types. The API response wrapper uses this idea.
+        </p>
+        <pre><code>ApiResponse&lt;LoginResponse&gt;.Ok(response)
+ApiResponse&lt;string&gt;.Ok("Password changed")
+ApiResponse&lt;UserProfileResponse&gt;.Ok(profile)</code></pre>
+
+        <h3>LINQ</h3>
+        <p>
+          LINQ is used to query collections and EF Core data.
+        </p>
+        <pre><code>var errors = validationResult.Errors
+    .GroupBy(error =&gt; error.PropertyName)
+    .ToDictionary(
+        group =&gt; group.Key,
+        group =&gt; group.Select(error =&gt; error.ErrorMessage).ToArray());</code></pre>
+
+        <h3>Exceptions</h3>
+        <p>
+          Use cases throw exceptions when business rules fail. The global exception handler converts them into HTTP responses.
+        </p>
+        <pre><code>if (user is null)
+{
+    throw new UnauthorizedAccessException("Invalid email or password");
+}</code></pre>
+      </section>
+
+      <section id="domain">
+        <h2>5. Domain Layer</h2>
+        <p>
+          The Domain layer contains business entities. It should not know about HTTP, EF Core, PostgreSQL, JWT, or Resend.
+        </p>
+
+        <h3>Entity Pattern</h3>
+        <pre><code>public class User
+{
+    public Guid Id { get; private set; }
+    public string Name { get; private set; } = string.Empty;
+    public string Email { get; private set; } = string.Empty;
+    public string PasswordHash { get; private set; } = string.Empty;
+    public DateOnly? Birthdate { get; private set; }
+    public string Status { get; private set; } = "active";
+    public DateTime CreatedAt { get; private set; }
+    public DateTime UpdatedAt { get; private set; }
+
+    private User() { }
+
+    public static User Create(
+        string name,
+        string email,
+        string passwordHash,
+        DateOnly? birthdate = null)
+    {
+        return new User
+        {
+            Id = Guid.NewGuid(),
+            Name = name,
+            Email = email,
+            PasswordHash = passwordHash,
+            Birthdate = birthdate,
+            Status = "active",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+    }
+}</code></pre>
+
+        <h3>Why Private Setters?</h3>
+        <p>
+          Properties use <code>private set</code> so code outside the entity cannot change state randomly.
+          Changes should happen through named methods.
+        </p>
+
+        <pre><code>public void ChangePassword(string passwordHash)
+{
+    PasswordHash = passwordHash;
+    UpdatedAt = DateTime.UtcNow;
+}
+
+public void UpdateProfile(string name, string email, DateOnly? birthdate)
+{
+    Name = name;
+    Email = email;
+    Birthdate = birthdate;
+    UpdatedAt = DateTime.UtcNow;
+}</code></pre>
+
+        <h3>Token Entities</h3>
+        <p>
+          Refresh tokens and password reset tokens are persisted as hashes. The raw token is only returned to the user or emailed once.
+        </p>
+
+        <pre><code>public class RefreshToken
+{
+    public Guid Id { get; private set; }
+    public Guid UserId { get; private set; }
+    public string TokenHash { get; private set; } = string.Empty;
+    public DateTime ExpiresAt { get; private set; }
+    public DateTime? RevokedAt { get; private set; }
+
+    public bool IsExpired =&gt; DateTime.UtcNow &gt;= ExpiresAt;
+    public bool IsRevoked =&gt; RevokedAt.HasValue;
+    public bool IsActive =&gt; !IsExpired &amp;&amp; !IsRevoked;
+
+    public void Revoke() =&gt; RevokedAt = DateTime.UtcNow;
+}</code></pre>
+
+        <div class="note">
+          <strong>Domain rule:</strong> business state changes should live on the entity when they are part of the entity behavior.
+        </div>
+      </section>
+
+      <section id="application">
+        <h2>6. Application Layer</h2>
+        <p>
+          The Application layer coordinates user actions. It does not know how EF Core saves data or how JWT is generated internally.
+        </p>
+
+        <h3>DTOs</h3>
+        <p>
+          DTO means Data Transfer Object. It is the shape of input or output.
+        </p>
+
+        <pre><code>public record UpdateCurrentUserRequest(
+    string Name,
+    string Email,
+    DateOnly? BirthDate
+);
+
+public record UserProfileResponse(
+    Guid Id,
+    string Name,
+    string Email,
+    DateOnly? BirthDate,
+    string Status,
+    DateTime CreatedAt,
+    DateTime UpdatedAt
+);</code></pre>
+
+        <h3>Use Case Pattern</h3>
+        <p>
+          A use case is one application action. It receives a request, loads entities, applies business rules, saves changes, and returns a response.
+        </p>
+
+        <pre><code>public class UpdateCurrentUserUseCase(IUserRepository userRepository)
+{
+    public async Task&lt;UserProfileResponse&gt; ExecuteAsync(
+        Guid userId,
+        UpdateCurrentUserRequest request)
+    {
+        var user = await userRepository.GetByIdAsync(userId);
+
+        if (user is null || user.Status != "active")
+        {
+            throw new UnauthorizedAccessException("Invalid user");
+        }
+
+        if (!string.Equals(user.Email, request.Email, StringComparison.OrdinalIgnoreCase)
+            &amp;&amp; await userRepository.EmailExistsAsync(request.Email))
+        {
+            throw new ApplicationException("Email already exists");
+        }
+
+        user.UpdateProfile(request.Name, request.Email, request.BirthDate);
+        await userRepository.SaveChangesAsync();
+
+        return new UserProfileResponse(
+            user.Id,
+            user.Name,
+            user.Email,
+            user.Birthdate,
+            user.Status,
+            user.CreatedAt,
+            user.UpdatedAt);
+    }
+}</code></pre>
+
+        <h3>Abstractions</h3>
+        <p>
+          Abstractions are interfaces that Application needs.
+        </p>
+
+        <pre><code>public interface IPasswordHasher
+{
+    string HashPassword(string password);
+    bool VerifyPassword(string password, string hashedPassword);
+}</code></pre>
+
+        <p>
+          This lets tests use fake implementations and production use BCrypt.
+        </p>
+
+        <h3>Validators</h3>
+        <p>
+          FluentValidation classes validate input before use cases run.
+        </p>
+
+        <pre><code>public class ChangeCurrentUserPasswordRequestValidator
+    : AbstractValidator&lt;ChangeCurrentUserPasswordRequest&gt;
+{
+    public ChangeCurrentUserPasswordRequestValidator()
+    {
+        RuleFor(input =&gt; input.CurrentPassword)
+            .NotEmpty();
+
+        RuleFor(input =&gt; input.NewPassword)
+            .NotEmpty()
+            .MinimumLength(6);
+    }
+}</code></pre>
+
+        <h3>Dependency Registration</h3>
+        <p>
+          Application use cases are registered in the DI container.
+        </p>
+
+        <pre><code>public static IServiceCollection AddApplication(this IServiceCollection services)
+{
+    services.AddScoped&lt;RegisterUseCase&gt;();
+    services.AddScoped&lt;LoginUseCase&gt;();
+    services.AddScoped&lt;RefreshTokenUseCase&gt;();
+    services.AddScoped&lt;LogoutUseCase&gt;();
+    services.AddScoped&lt;ForgotPasswordUseCase&gt;();
+    services.AddScoped&lt;ResetPasswordUseCase&gt;();
+    services.AddScoped&lt;GetCurrentUserUseCase&gt;();
+    services.AddScoped&lt;UpdateCurrentUserUseCase&gt;();
+    services.AddScoped&lt;ChangeCurrentUserPasswordUseCase&gt;();
+
+    return services;
+}</code></pre>
+
+        <div class="warning">
+          <strong>Important:</strong> use cases should not call EF Core directly. They should go through repository interfaces.
+        </div>
+      </section>
+
+      <section id="infrastructure">
+        <h2>7. Infrastructure Layer</h2>
+        <p>
+          Infrastructure contains details. EF Core, PostgreSQL, BCrypt, JWT, secure tokens, and Resend live here.
+        </p>
+
+        <h3>DbContext</h3>
+        <p>
+          EF Core uses a <code>DbContext</code> to represent a database session.
+        </p>
+
+        <pre><code>public class AuthDbContext(DbContextOptions&lt;AuthDbContext&gt; options)
+    : DbContext(options)
+{
+    public DbSet&lt;User&gt; Users { get; init; }
+    public DbSet&lt;Role&gt; Roles { get; init; }
+    public DbSet&lt;Permission&gt; Permissions { get; init; }
+    public DbSet&lt;RefreshToken&gt; RefreshTokens { get; init; }
+    public DbSet&lt;PasswordResetToken&gt; PasswordResetTokens { get; init; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.HasDefaultSchema("auth");
+        modelBuilder.ApplyConfiguration(new UserConfiguration());
+        modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
+        modelBuilder.ApplyConfiguration(new PasswordResetTokenConfiguration());
+        base.OnModelCreating(modelBuilder);
+    }
+}</code></pre>
+
+        <h3>Entity Configuration</h3>
+        <p>
+          EF Core configuration maps C# entities to database tables and columns.
+        </p>
+
+        <pre><code>public class UserConfiguration : IEntityTypeConfiguration&lt;User&gt;
+{
+    public void Configure(EntityTypeBuilder&lt;User&gt; builder)
+    {
+        builder.ToTable("users");
+        builder.HasKey(user =&gt; user.Id);
+
+        builder.Property(user =&gt; user.Email)
+            .IsRequired()
+            .HasMaxLength(255);
+
+        builder.HasIndex(user =&gt; user.Email)
+            .IsUnique()
+            .HasDatabaseName("idx_users_email");
+    }
+}</code></pre>
+
+        <h3>Repository Implementation</h3>
+        <p>
+          Repositories implement Application interfaces using EF Core.
+        </p>
+
+        <pre><code>public class UserRepository(AuthDbContext context) : IUserRepository
+{
+    public async Task&lt;User?&gt; GetByIdAsync(Guid id)
+    {
+        return await context.Users.FindAsync(id);
+    }
+
+    public async Task&lt;User?&gt; GetByEmailAsync(string email)
+    {
+        return await context.Users.FirstOrDefaultAsync(user =&gt; user.Email == email);
+    }
+
+    public async Task AddAsync(User user)
+    {
+        await context.Users.AddAsync(user);
+    }
+
+    public async Task SaveChangesAsync()
+    {
+        await context.SaveChangesAsync();
+    }
+}</code></pre>
+
+        <h3>JWT Service</h3>
+        <p>
+          The JWT service creates access tokens and refresh tokens.
+        </p>
+
+        <pre><code>public string GenerateAccessToken(
+    User user,
+    IReadOnlyCollection&lt;string&gt; roles,
+    IReadOnlyCollection&lt;string&gt; permissions)
+{
+    var claims = new List&lt;Claim&gt;
+    {
+        new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+        new(JwtRegisteredClaimNames.Email, user.Email),
+        new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new(ClaimTypes.Name, user.Name)
+    };
+
+    claims.AddRange(roles.Select(role =&gt; new Claim(ClaimTypes.Role, role)));
+    claims.AddRange(permissions.Select(permission =&gt; new Claim("permission", permission)));
+
+    // create and return signed token
+}</code></pre>
+
+        <h3>Password Hashing</h3>
+        <p>
+          Passwords are never stored as plain text. BCrypt creates a one way hash.
+        </p>
+
+        <pre><code>public string HashPassword(string password)
+{
+    return BCrypt.Net.BCrypt.HashPassword(password, WorkFactor);
+}
+
+public bool VerifyPassword(string password, string hashedPassword)
+{
+    return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
+}</code></pre>
+
+        <h3>Secure Tokens</h3>
+        <p>
+          Refresh tokens and password reset tokens are random strings. The database stores only hashes.
+        </p>
+
+        <pre><code>public string GenerateToken()
+{
+    return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+}
+
+public string HashToken(string token)
+{
+    var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(token));
+    return Convert.ToHexString(bytes);
+}</code></pre>
+
+        <h3>Infrastructure DI</h3>
+        <pre><code>public static IServiceCollection AddInfrastructure(
+    this IServiceCollection services,
+    IConfiguration configuration)
+{
+    services.AddDatabaseContexts(configuration);
+    services.AddScoped&lt;IUserRepository, UserRepository&gt;();
+    services.AddScoped&lt;IPasswordHasher, PasswordHasher&gt;();
+    services.AddScoped&lt;IJwtService, JwtService&gt;();
+    services.AddScoped&lt;ISecureTokenService, SecureTokenService&gt;();
+
+    return services;
+}</code></pre>
+
+        <div class="warning">
+          <strong>EF Core note:</strong> do not run parallel queries with the same <code>DbContext</code>. It is scoped and not thread safe.
+        </div>
+      </section>
+
+      <section id="api">
+        <h2>8. API Layer</h2>
+        <p>
+          The API layer maps HTTP requests to use cases. This project uses Minimal APIs instead of MVC controllers.
+        </p>
+
+        <h3>Endpoint Group</h3>
+        <pre><code>public static class UserEndpoints
+{
+    public static IEndpointRouteBuilder MapUserEndpoints(
+        this IEndpointRouteBuilder app)
+    {
+        var group = app.MapGroup("/api/users")
+            .WithTags("Users")
+            .RequireAuthorization();
+
+        group.MapGet("/me", async (
+            ClaimsPrincipal principal,
+            GetCurrentUserUseCase useCase) =&gt;
+        {
+            var userId = GetUserId(principal);
+
+            if (userId is null)
+            {
+                return Results.Unauthorized();
+            }
+
+            var response = await useCase.ExecuteAsync(userId.Value);
+
+            return Results.Ok(ApiResponse&lt;UserProfileResponse&gt;.Ok(response));
+        });
+
+        return app;
+    }
+}</code></pre>
+
+        <h3>Validation in Endpoints</h3>
+        <p>
+          Endpoint validation currently follows this pattern.
+        </p>
+
+        <pre><code>var validationResult = await validator.ValidateAsync(request);
+
+if (!validationResult.IsValid)
+{
+    var errors = validationResult.Errors
+        .GroupBy(error =&gt; error.PropertyName)
+        .ToDictionary(
+            group =&gt; group.Key,
+            group =&gt; group.Select(error =&gt; error.ErrorMessage).ToArray());
+
+    return Results.ValidationProblem(errors);
+}</code></pre>
+
+        <h3>Program.cs</h3>
+        <p>
+          <code>Program.cs</code> wires all services and middleware.
+        </p>
+
+        <pre><code>builder.Services.AddValidatorsFromAssemblyContaining&lt;RegisterRequestValidator&gt;();
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddJwtAuthentication(builder.Configuration);
+
+var app = builder.Build();
+
+app.UseCors("CarameloBetPolicy");
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseExceptionHandler();
+
+app.MapAuthEndpoints();
+app.MapUserEndpoints();
+
+app.Run();</code></pre>
+
+        <h3>JWT Claims</h3>
+        <p>
+          Protected endpoints read the current user id from claims.
+        </p>
+
+        <pre><code>private static Guid? GetUserId(ClaimsPrincipal principal)
+{
+    var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier)
+        ?? principal.FindFirstValue(JwtRegisteredClaimNames.Sub);
+
+    return Guid.TryParse(userId, out var parsedUserId)
+        ? parsedUserId
+        : null;
+}</code></pre>
+      </section>
+
+      <section id="gateway">
+        <h2>9. Gateway</h2>
+        <p>
+          The Gateway project uses YARP as a reverse proxy. It receives requests and forwards them to the API.
+        </p>
+
+        <pre><code>"ReverseProxy": {
+  "Routes": {
+    "auth-route": {
+      "ClusterId": "api-cluster",
+      "Match": {
+        "Path": "/api/auth/{**catch-all}"
+      },
+      "AuthorizationPolicy": "Anonymous"
+    },
+    "api-route": {
+      "ClusterId": "api-cluster",
+      "Match": {
+        "Path": "/api/{**catch-all}"
+      },
+      "AuthorizationPolicy": "Default"
+    }
+  }
+}</code></pre>
+
+        <p>
+          This means auth routes are public, while other <code>/api</code> routes require a valid JWT at the gateway.
+        </p>
+
+        <h3>Gateway Middleware Order</h3>
+        <pre><code>app.UseCors("CarameloBetPolicy");
+app.UseRedisRateLimiting();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapReverseProxy();</code></pre>
+      </section>
+
+      <section id="auth-flow">
+        <h2>10. Auth Flow</h2>
+
+        <h3>Register</h3>
+        <div class="flow">
+          <div>Client sends name, email, password, and optional birth date.</div>
+          <div>Validator checks basic input rules.</div>
+          <div>Use case checks if email already exists.</div>
+          <div>Password hasher creates a BCrypt hash.</div>
+          <div>User entity is created.</div>
+          <div>Repository saves the user.</div>
+        </div>
+
+        <h3>Login</h3>
+        <div class="flow">
+          <div>Client sends email and password.</div>
+          <div>Use case loads user by email.</div>
+          <div>Password hasher verifies raw password against stored hash.</div>
+          <div>JWT service generates access token.</div>
+          <div>JWT service generates refresh token.</div>
+          <div>Refresh token is hashed and stored in the database.</div>
+          <div>Raw refresh token is returned to the client once.</div>
+        </div>
+
+        <h3>Refresh Token</h3>
+        <div class="flow">
+          <div>Client sends refresh token.</div>
+          <div>Server hashes token and finds matching row.</div>
+          <div>Server checks token is not expired and not revoked.</div>
+          <div>Old refresh token is revoked.</div>
+          <div>New access token and refresh token are generated.</div>
+          <div>New refresh token hash is stored.</div>
+        </div>
+
+        <h3>Password Reset</h3>
+        <div class="flow">
+          <div>Client sends email.</div>
+          <div>Use case returns silently if user does not exist.</div>
+          <div>Secure random reset token is generated.</div>
+          <div>Token hash is stored in database.</div>
+          <div>Raw reset token is sent by email.</div>
+          <div>Client sends token and new password.</div>
+          <div>Server validates token, changes password, and marks token used.</div>
+        </div>
+
+        <div class="warning">
+          <strong>Security reason:</strong> raw refresh and reset tokens are never stored. If the database leaks, attackers cannot use those hashes as tokens.
+        </div>
+      </section>
+
+      <section id="tests">
+        <h2>11. Tests</h2>
+        <p>
+          The Application tests focus on use cases. They use fake repositories and fake services instead of a real database.
+        </p>
+
+        <h3>Test Shape</h3>
+        <pre><code>[Fact]
+public async Task ChangeCurrentUserPassword_WithValidCurrentPassword_ChangesPassword()
+{
+    var user = User.Create("Iure", "iure@example.com", "hashed-password");
+    var useCase = new ChangeCurrentUserPasswordUseCase(
+        new FakeUserRepository(user),
+        new FakePasswordHasher(true));
+
+    await useCase.ExecuteAsync(
+        user.Id,
+        new ChangeCurrentUserPasswordRequest("current-password", "new-password"));
+
+    Assert.Equal("hashed-new-password", user.PasswordHash);
+}</code></pre>
+
+        <h3>Fake Repository</h3>
+        <pre><code>private sealed class FakeUserRepository(params User[] users) : IUserRepository
+{
+    public Task&lt;User?&gt; GetByIdAsync(Guid id)
+    {
+        return Task.FromResult(users.FirstOrDefault(user =&gt; user.Id == id));
+    }
+
+    public Task&lt;User?&gt; GetByEmailAsync(string email)
+    {
+        return Task.FromResult(users.FirstOrDefault(user =&gt; user.Email == email));
+    }
+
+    public Task SaveChangesAsync()
+    {
+        return Task.CompletedTask;
+    }
+}</code></pre>
+
+        <h3>Why Fakes?</h3>
+        <ul>
+          <li>Use case tests run fast.</li>
+          <li>They test business flow, not PostgreSQL.</li>
+          <li>They make edge cases easy to simulate.</li>
+          <li>They avoid requiring Docker for every unit test run.</li>
+        </ul>
+
+        <h3>What We Tested So Far</h3>
+        <ul>
+          <li>Login success and failure.</li>
+          <li>Inactive user login rejection.</li>
+          <li>Refresh token rotation.</li>
+          <li>Revoked and expired refresh token rejection.</li>
+          <li>Logout token revocation.</li>
+          <li>Forgot password token creation and email sending.</li>
+          <li>Reset password success and used token rejection.</li>
+          <li>Get current user profile.</li>
+          <li>Update current user profile.</li>
+          <li>Duplicate email rejection.</li>
+          <li>Change current user password.</li>
+          <li>Invalid current password rejection.</li>
+          <li>Registration and duplicate email rejection.</li>
+          <li>Admin user and role management.</li>
+          <li>Domain behavior for users, roles, permissions, and tokens.</li>
+        </ul>
+      </section>
+
+      <section id="commands">
+        <h2>12. Commands Used</h2>
+        <p>
+          This project uses <code>rtk</code> before shell commands.
+        </p>
+
+        <h3>Build</h3>
+        <pre><code>rtk dotnet build CarameloBet.slnx</code></pre>
+
+        <h3>Test</h3>
+        <pre><code>rtk dotnet test CarameloBet.slnx</code></pre>
+
+        <h3>Git Status</h3>
+        <pre><code>rtk git status --short --branch</code></pre>
+
+        <h3>Search Files</h3>
+        <pre><code>rtk rg --files
+rtk rg -n "LoginUseCase|RefreshToken" src tests</code></pre>
+
+        <h3>Run Locally</h3>
+        <pre><code>rtk docker compose up -d
+rtk dotnet run --project src/CarameloBet.API
+rtk dotnet run --project src/CarameloBet.Gateway</code></pre>
+      </section>
+
+      <section id="next">
+        <h2>13. What Comes Next</h2>
+        <p>
+          Phase 2 is complete. The next roadmap area is Phase 3, the Wallet Service.
+        </p>
+
+        <h3>Phase 3 Endpoints</h3>
+        <pre><code>GET    /api/wallets/me/balance
+POST   /api/wallets/me/deposit
+POST   /api/wallets/me/withdraw
+GET    /api/wallets/me/transactions</code></pre>
+
+        <h3>Concepts You Will Learn Next</h3>
+        <ul>
+          <li>Money modeling with <code>decimal</code>.</li>
+          <li>Pessimistic locking for safe concurrent debits.</li>
+          <li>Idempotency keys for financial operations.</li>
+          <li>Immutable transaction history.</li>
+          <li>Deposit and withdrawal validation.</li>
+          <li>Outbox events for reliable messaging.</li>
+        </ul>
+
+        <h3>Phase 3 Focus</h3>
+        <p>
+          Phase 3 starts the Wallet Service. That is where the project becomes more domain heavy:
+          balance, deposits, withdrawals, transactions, idempotency, and money safety.
+        </p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

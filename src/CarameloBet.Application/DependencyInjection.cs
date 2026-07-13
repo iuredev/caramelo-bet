@@ -9,6 +9,21 @@ public static class DependencyInjection
     {
         services.AddScoped<RegisterUseCase>();
         services.AddScoped<LoginUseCase>();
+        services.AddScoped<RefreshTokenUseCase>();
+        services.AddScoped<LogoutUseCase>();
+        services.AddScoped<ForgotPasswordUseCase>();
+        services.AddScoped<ResetPasswordUseCase>();
+        services.AddScoped<GetCurrentUserUseCase>();
+        services.AddScoped<UpdateCurrentUserUseCase>();
+        services.AddScoped<ChangeCurrentUserPasswordUseCase>();
+        services.AddScoped<ListAdminUsersUseCase>();
+        services.AddScoped<GetAdminUserUseCase>();
+        services.AddScoped<UpdateAdminUserUseCase>();
+        services.AddScoped<DeleteAdminUserUseCase>();
+        services.AddScoped<ListRolesUseCase>();
+        services.AddScoped<CreateRoleUseCase>();
+        services.AddScoped<UpdateRoleUseCase>();
+        services.AddScoped<AssignUserRoleUseCase>();
 
 
         return services;

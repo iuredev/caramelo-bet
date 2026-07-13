@@ -57,3 +57,6 @@ bin/
 obj/
 *.user
 .vs/
+.env
+.env.*
+!.env.example

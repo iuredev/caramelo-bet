@@ -14,8 +14,6 @@ public class LoginUseCase(
     {
         var user = await userRepository.GetByEmailAsync(request.Email);
 
-        Console.WriteLine("LOG2  {0}", user);
-
         if (user is null || !passwordHasher.VerifyPassword(request.Password, user.PasswordHash))
         {
             throw new UnauthorizedAccessException("Invalid email or password");

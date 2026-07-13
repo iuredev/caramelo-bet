@@ -19,7 +19,7 @@ try
         {
             policy
                 .WithOrigins(
-                    builder.Configuration["Cors:AllowedOrigins"] ?? "http://localhost:3000")
+                    GetAllowedOrigins(builder.Configuration))
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials();
@@ -80,4 +80,12 @@ catch (Exception ex)
 finally
 {
     Log.CloseAndFlush();
+}
+
+static string[] GetAllowedOrigins(IConfiguration configuration)
+{
+    var origins = configuration["Cors:AllowedOrigins"] ?? "http://localhost:3000";
+
+    return origins
+        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 }

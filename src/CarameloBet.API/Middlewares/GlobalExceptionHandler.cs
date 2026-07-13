@@ -19,7 +19,7 @@ public class GlobalExceptionHandler : IExceptionHandler
         CancellationToken cancellationToken
     )
     {
-        if (exception is ApplicationException or UnauthorizedAccessException or InvalidOperationException)
+        if (exception is ApplicationException or UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
         {
             _logger.LogWarning(exception, "Handled request exception: {Message}", exception.Message);
         }
@@ -33,6 +33,7 @@ public class GlobalExceptionHandler : IExceptionHandler
             ApplicationException => StatusCodes.Status400BadRequest,
             UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
             InvalidOperationException => StatusCodes.Status403Forbidden,
+            KeyNotFoundException => StatusCodes.Status404NotFound,
             _ => StatusCodes.Status500InternalServerError
         };
 
@@ -41,6 +42,7 @@ public class GlobalExceptionHandler : IExceptionHandler
             StatusCodes.Status400BadRequest => "Invalid request",
             StatusCodes.Status401Unauthorized => "Unauthorized",
             StatusCodes.Status403Forbidden => "Forbidden",
+            StatusCodes.Status404NotFound => "Not found",
             _ => "An unexpected error occurred"
         };
 
@@ -48,7 +50,9 @@ public class GlobalExceptionHandler : IExceptionHandler
         {
             Status = statusCode,
             Title = title,
-            Detail = exception.Message
+            Detail = statusCode == StatusCodes.Status500InternalServerError
+                ? "An unexpected error occurred."
+                : exception.Message
         };
 
         httpContext.Response.StatusCode = statusCode;

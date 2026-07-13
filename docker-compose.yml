@@ -4,11 +4,11 @@ services:
         image: postgres:latest
         container_name: caramelo-postgres
         environment:
-            POSTGRES_USER: caramelo
-            POSTGRES_PASSWORD: caramelo123
-            POSTGRES_DB: caramelo_bet
+            POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+            POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB}
         ports:
-            - "5433:5432"
+            - "127.0.0.1:5433:5432"
         volumes:
             - postgres_data:/var/lib/postgresql
         healthcheck:
@@ -21,10 +21,10 @@ services:
         image: dpage/pgadmin4:latest
         container_name: caramelo-pgadmin
         environment:
-            PGADMIN_DEFAULT_EMAIL: admin@admin.com
-            PGADMIN_DEFAULT_PASSWORD: admin
+            PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:?Set PGADMIN_DEFAULT_EMAIL}
+            PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?Set PGADMIN_DEFAULT_PASSWORD}
         ports:
-            - "5050:80"
+            - "127.0.0.1:5050:80"
         depends_on:
             - postgres
 
@@ -33,7 +33,7 @@ services:
         image: redis:7-alpine
         container_name: caramelo-redis
         ports:
-            - "6379:6379"
+            - "127.0.0.1:6379:6379"
         volumes:
             - redis_data:/data
         healthcheck:
@@ -46,7 +46,7 @@ services:
         image: redis/redisinsight:latest
         container_name: caramelo-redis-insight
         ports:
-            - "5540:5540"
+            - "127.0.0.1:5540:5540"
         volumes:
             - redis_insight_data:/data
         depends_on:
@@ -57,11 +57,11 @@ services:
         image: rabbitmq:3-management-alpine
         container_name: caramelo-rabbitmq
         environment:
-            RABBITMQ_DEFAULT_USER: caramelo
-            RABBITMQ_DEFAULT_PASS: caramelo123
+            RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:?Set RABBITMQ_DEFAULT_USER}
+            RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:?Set RABBITMQ_DEFAULT_PASS}
         ports:
-            - "5672:5672" # AMQP
-            - "15672:15672" # Management UI
+            - "127.0.0.1:5672:5672" # AMQP
+            - "127.0.0.1:15672:15672" # Management UI
         volumes:
             - rabbitmq_data:/var/lib/rabbitmq
         healthcheck:
@@ -76,10 +76,10 @@ services:
         container_name: caramelo-seq
         environment:
             ACCEPT_EULA: Y
-            SEQ_FIRSTRUN_ADMINPASSWORD: caramelo123
+            SEQ_FIRSTRUN_ADMINPASSWORD: ${SEQ_FIRSTRUN_ADMINPASSWORD:?Set SEQ_FIRSTRUN_ADMINPASSWORD}
         ports:
-            - "5341:5341"
-            - "8081:80"
+            - "127.0.0.1:5341:5341"
+            - "127.0.0.1:8081:80"
         volumes:
             - seq_data:/data
 
@@ -88,7 +88,7 @@ services:
         image: prom/prometheus:latest
         container_name: caramelo-prometheus
         ports:
-            - "9090:9090"
+            - "127.0.0.1:9090:9090"
         volumes:
             - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
             - prometheus_data:/prometheus
@@ -97,9 +97,9 @@ services:
         image: grafana/grafana:latest
         container_name: caramelo-grafana
         environment:
-            GF_SECURITY_ADMIN_PASSWORD: caramelo123
+            GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD}
         ports:
-            - "3001:3000"
+            - "127.0.0.1:3001:3000"
         volumes:
             - grafana_data:/var/lib/grafana
         depends_on:
@@ -110,11 +110,11 @@ services:
         image: jaegertracing/jaeger:2.6.0
         container_name: caramelo-jaeger
         ports:
-            - "16686:16686"
-            - "4317:4317"
-            - "4318:4318"
-            - "8889:8889"
-            - "8888:8888"
+            - "127.0.0.1:16686:16686"
+            - "127.0.0.1:4317:4317"
+            - "127.0.0.1:4318:4318"
+            - "127.0.0.1:8889:8889"
+            - "127.0.0.1:8888:8888"
         volumes:
             - ./infra/jaeger/jaeger-config.yml:/etc/jaeger/config.yml
         command: ["--config", "/etc/jaeger/config.yml"]

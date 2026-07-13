@@ -5,6 +5,7 @@ using Prometheus;
 using MassTransit;
 using FluentValidation;
 using MapsterMapper;
+using Microsoft.AspNetCore.RateLimiting;
 using CarameloBet.Application;
 using CarameloBet.API.Middlewares;
 using CarameloBet.API.Models;
@@ -14,6 +15,7 @@ using CarameloBet.Infrastructure.Persistence.Game;
 using CarameloBet.Infrastructure;
 using CarameloBet.API.Endpoints;
 using CarameloBet.Application.Validators.Auth;
+using System.Threading.RateLimiting;
 
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
@@ -30,11 +32,30 @@ try
         {
             policy
                 .WithOrigins(
-                    builder.Configuration["Cors:AllowedOrigins"] ?? "http://localhost:3000")
+                    GetAllowedOrigins(builder.Configuration))
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials();
         });
+    });
+
+    builder.Services.AddRateLimiter(options =>
+    {
+        var permitLimit = builder.Configuration.GetValue<int>("AuthRateLimit:PermitLimit", 10);
+        var windowSeconds = builder.Configuration.GetValue<int>("AuthRateLimit:WindowSeconds", 60);
+
+        options.AddPolicy("auth", context =>
+            RateLimitPartition.GetFixedWindowLimiter(
+                GetClientPartitionKey(context),
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = permitLimit,
+                    Window = TimeSpan.FromSeconds(windowSeconds),
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                    QueueLimit = 0
+                }));
+
+        options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
     });
 
     // Prometheus
@@ -64,8 +85,8 @@ try
                     cfg.Host(builder.Configuration["RabbitMQ:Host"] ?? "localhost", "/",
                         host =>
                         {
-                            host.Username(builder.Configuration["RabbitMQ:Username"] ?? "caramelo");
-                            host.Password(builder.Configuration["RabbitMQ:Password"] ?? "caramelo123");
+                            host.Username(GetRequiredConfiguration(builder.Configuration, "RabbitMQ:Username"));
+                            host.Password(GetRequiredConfiguration(builder.Configuration, "RabbitMQ:Password"));
                         });
 
                     cfg.UseMessageRetry(retry =>
@@ -93,6 +114,7 @@ try
 
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
+    builder.Services.AddJwtAuthentication(builder.Configuration);
 
 
     var app = builder.Build();
@@ -101,6 +123,10 @@ try
     if (app.Environment.IsDevelopment())
     {
         app.MapOpenApi();
+        app.MapGet("/test-error", () =>
+        {
+            throw new Exception();
+        });
     }
 
     if (!app.Environment.IsDevelopment())
@@ -109,6 +135,9 @@ try
     }
 
     app.UseCors("CarameloBetPolicy");
+    app.UseRateLimiter();
+    app.UseAuthentication();
+    app.UseAuthorization();
 
     // Prometheus
     app.UseMetricServer();
@@ -120,14 +149,12 @@ try
         {
             return "Hello, World!";
         });
-    app.MapGet("/test-error", () =>
-        {
-            throw new Exception();
-        });
     app.MapGet("/api", () => ApiResponse<string>.Ok("V1 API is running"));
     app.MapGet("/health", () => ApiResponse<string>.Ok("CarameloBet API is running"));
 
     app.MapAuthEndpoints();
+    app.MapUserEndpoints();
+    app.MapAdminEndpoints();
 
 
     using (var scope = app.Services.CreateScope())
@@ -148,4 +175,22 @@ catch (Exception ex)
 finally
 {
     Log.CloseAndFlush();
+}
+
+static string[] GetAllowedOrigins(IConfiguration configuration)
+{
+    var origins = configuration["Cors:AllowedOrigins"] ?? "http://localhost:3000";
+
+    return origins
+        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+}
+
+static string GetClientPartitionKey(HttpContext context)
+{
+    return context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+}
+
+static string GetRequiredConfiguration(IConfiguration configuration, string key)
+{
+    return configuration[key] ?? throw new InvalidOperationException($"{key} is required.");
 }
