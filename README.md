@@ -171,7 +171,7 @@ Aviator:  cashout                            (pays current multiplier)
 
 | Service | Endpoints |
 |---|---|
-| Auth Service | 17 endpoints |
+| Auth Service | 19 endpoints |
 | Wallet Service | 4 endpoints + queue consumer |
 | Game Service | 9 endpoints + WebSocket |
 | History Service | 10 endpoints |
@@ -252,6 +252,17 @@ dotnet run --project src/CarameloBet.Workers
 | Grafana (Metrics) | http://localhost:3001 |
 | Jaeger (Traces) | http://localhost:16686 |
 | RedisInsight | http://localhost:5540 |
+
+### API documentation and testing
+
+When the API runs in the `Development` environment:
+
+| Resource | URL |
+|---|---|
+| Interactive Scalar reference | http://localhost:5057/scalar/v1 |
+| OpenAPI document | http://localhost:5057/openapi/v1.json |
+
+Import the OpenAPI URL into Insomnia to generate the request collection. Follow the [Auth API testing guide](docs/auth-api-insomnia-guide.md) for the complete setup, request order, JWT/RBAC configuration, and success and failure test matrix for all 19 Auth endpoints.
 
 ---
 

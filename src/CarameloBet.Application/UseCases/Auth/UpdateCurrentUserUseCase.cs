@@ -9,7 +9,7 @@ public class UpdateCurrentUserUseCase(IUserRepository userRepository)
     {
         var user = await userRepository.GetByIdAsync(userId);
 
-        if (user is null || user.Status != "active")
+        if (user is null || !await UserAccess.IsActiveAsync(user, userRepository))
         {
             throw new UnauthorizedAccessException("Invalid user");
         }

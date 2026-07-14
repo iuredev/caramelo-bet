@@ -11,5 +11,4 @@ public interface IJwtService
 
     string GenerateRefreshToken();
     string HashRefreshToken(string refreshToken);
-    DateTime AccessTokenExpiresAt { get; }
 }

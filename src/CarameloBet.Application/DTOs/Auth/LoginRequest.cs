@@ -9,13 +9,13 @@ public record AuthenticatedUserResponse(
     Guid Id,
     string Name,
     string Email,
-    string Status
+    string Status,
+    IReadOnlyCollection<string> Roles
 );
 
 public record LoginResponse(
     string AccessToken,
     string RefreshToken,
-    DateTime AccessTokenExpiresAt,
     AuthenticatedUserResponse User
 );
 
@@ -25,9 +25,7 @@ public record RefreshTokenRequest(
 
 public record RefreshTokenResponse(
     string AccessToken,
-    string RefreshToken,
-    DateTime AccessTokenExpiresAt,
-    AuthenticatedUserResponse User
+    string RefreshToken
 );
 
 public record LogoutRequest(

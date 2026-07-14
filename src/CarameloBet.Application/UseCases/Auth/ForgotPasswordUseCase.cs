@@ -14,7 +14,7 @@ public class ForgotPasswordUseCase(
     {
         var user = await userRepository.GetByEmailAsync(request.Email);
 
-        if (user is null || user.Status != "active")
+        if (user is null || !await UserAccess.IsActiveAsync(user, userRepository))
         {
             return;
         }

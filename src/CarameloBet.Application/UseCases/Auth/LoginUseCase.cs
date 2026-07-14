@@ -19,7 +19,7 @@ public class LoginUseCase(
             throw new UnauthorizedAccessException("Invalid email or password");
         }
 
-        if (user.Status != "active")
+        if (!await UserAccess.IsActiveAsync(user, userRepository))
         {
             throw new InvalidOperationException("User is not active");
         }
@@ -36,11 +36,11 @@ public class LoginUseCase(
         return new LoginResponse(
             accessToken,
             refreshToken,
-            jwtService.AccessTokenExpiresAt,
             new AuthenticatedUserResponse(
                 user.Id,
                 user.Name,
                 user.Email,
-                user.Status));
+                user.Status,
+                roles));
     }
 }

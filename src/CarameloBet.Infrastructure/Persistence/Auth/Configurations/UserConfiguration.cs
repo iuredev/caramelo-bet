@@ -26,6 +26,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired()
             .HasMaxLength(50);
 
+        builder.Property(u => u.BlockedReason)
+            .HasMaxLength(500);
+
         builder.HasIndex(u => u.Email)
             .IsUnique()
             .HasDatabaseName("idx_users_email");

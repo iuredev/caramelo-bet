@@ -8,6 +8,8 @@ public class User
     public string PasswordHash { get; private set; } = string.Empty;
     public DateOnly? Birthdate { get; private set; }
     public string Status { get; private set; } = "active";
+    public string? BlockedReason { get; private set; }
+    public DateTime? BlockedUntil { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 
@@ -44,7 +46,61 @@ public class User
 
     public void UpdateStatus(string status)
     {
+        if (status == "blocked")
+        {
+            throw new InvalidOperationException("Use Block to block a user.");
+        }
+
         Status = status;
+        BlockedReason = null;
+        BlockedUntil = null;
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Block(string reason, DateTime? blockedUntil)
+    {
+        if (Status == "deleted")
+        {
+            throw new InvalidOperationException("A deleted user cannot be blocked.");
+        }
+
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            throw new ArgumentException("Block reason is required.", nameof(reason));
+        }
+
+        if (blockedUntil.HasValue && blockedUntil.Value <= DateTime.UtcNow)
+        {
+            throw new ArgumentException("Block expiration must be in the future.", nameof(blockedUntil));
+        }
+
+        Status = "blocked";
+        BlockedReason = reason.Trim();
+        BlockedUntil = blockedUntil?.ToUniversalTime();
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Unblock()
+    {
+        if (Status == "deleted")
+        {
+            throw new InvalidOperationException("A deleted user cannot be unblocked.");
+        }
+
+        Status = "active";
+        BlockedReason = null;
+        BlockedUntil = null;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public bool ReleaseExpiredBlock(DateTime utcNow)
+    {
+        if (Status != "blocked" || !BlockedUntil.HasValue || BlockedUntil.Value > utcNow)
+        {
+            return false;
+        }
+
+        Unblock();
+        return true;
     }
 };

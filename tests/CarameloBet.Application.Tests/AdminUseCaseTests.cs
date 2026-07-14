@@ -17,23 +17,60 @@ public class AdminUseCaseTests
         await Assert.ThrowsAsync<ApplicationException>(() =>
             useCase.ExecuteAsync(
                 user.Id,
-                new UpdateAdminUserRequest("Iure", otherUser.Email, null, "active")));
+                new UpdateAdminUserRequest("Iure", otherUser.Email, null)));
     }
 
     [Fact]
-    public async Task UpdateAdminUser_WithValidData_UpdatesProfileAndStatus()
+    public async Task UpdateAdminUser_WithValidData_UpdatesProfile()
     {
         var user = User.Create("Iure", "iure@example.com", "hashed-password");
         var useCase = new UpdateAdminUserUseCase(new FakeAdminUserRepository(user));
 
         var response = await useCase.ExecuteAsync(
             user.Id,
-            new UpdateAdminUserRequest("Iure Silva", "iure.silva@example.com", null, "blocked"));
+            new UpdateAdminUserRequest("Iure Silva", "iure.silva@example.com", null));
 
         Assert.Equal("Iure Silva", user.Name);
         Assert.Equal("iure.silva@example.com", user.Email);
-        Assert.Equal("blocked", user.Status);
+        Assert.Equal("active", user.Status);
         Assert.Equal(user.Status, response.Status);
+    }
+
+    [Fact]
+    public async Task BlockAdminUser_WithReason_BlocksUserAndRevokesRefreshTokens()
+    {
+        var user = User.Create("Iure", "iure@example.com", "hashed-password");
+        var refreshToken = RefreshToken.Create(user.Id, "refresh-token-hash");
+        var refreshTokens = new FakeRefreshTokenRepository(refreshToken);
+        var useCase = new BlockAdminUserUseCase(
+            new FakeAdminUserRepository(user),
+            refreshTokens);
+        var expiresAt = DateTime.UtcNow.AddHours(2);
+
+        var response = await useCase.ExecuteAsync(
+            user.Id,
+            new BlockUserRequest("Chargeback investigation", expiresAt));
+
+        Assert.Equal("blocked", user.Status);
+        Assert.Equal("Chargeback investigation", user.BlockedReason);
+        Assert.Equal(expiresAt, user.BlockedUntil);
+        Assert.Equal(user.BlockedReason, response.BlockedReason);
+        Assert.True(refreshToken.IsRevoked);
+    }
+
+    [Fact]
+    public async Task UnblockAdminUser_WithBlockedUser_ClearsBlockState()
+    {
+        var user = User.Create("Iure", "iure@example.com", "hashed-password");
+        user.Block("Manual review", null);
+        var useCase = new UnblockAdminUserUseCase(new FakeAdminUserRepository(user));
+
+        var response = await useCase.ExecuteAsync(user.Id);
+
+        Assert.Equal("active", user.Status);
+        Assert.Null(user.BlockedReason);
+        Assert.Null(user.BlockedUntil);
+        Assert.Equal("active", response.Status);
     }
 
     [Fact]
@@ -147,6 +184,40 @@ public class AdminUseCaseTests
         public Task AssignRoleAsync(Guid userId, Guid roleId)
         {
             AssignedRoles.Add((userId, roleId));
+            return Task.CompletedTask;
+        }
+
+        public Task SaveChangesAsync()
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class FakeRefreshTokenRepository(params RefreshToken[] tokens)
+        : IRefreshTokenRepository
+    {
+        public Task<RefreshToken?> GetByTokenHashAsync(string tokenHash)
+        {
+            return Task.FromResult(tokens.FirstOrDefault(token => token.TokenHash == tokenHash));
+        }
+
+        public Task<RefreshToken?> RotateAsync(string oldTokenHash, string newTokenHash)
+        {
+            return Task.FromResult<RefreshToken?>(null);
+        }
+
+        public Task RevokeActiveTokensForUserAsync(Guid userId)
+        {
+            foreach (var token in tokens.Where(token => token.UserId == userId && token.IsActive))
+            {
+                token.Revoke();
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public Task AddAsync(RefreshToken refreshToken)
+        {
             return Task.CompletedTask;
         }
 

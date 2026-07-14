@@ -1,9 +1,13 @@
+using System.Text.Json.Serialization;
+
 namespace CarameloBet.API.Models;
 
 public class ApiResponse<T>
 {
     public bool Success { get; init; }
     public T? Data { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ApiError? Error { get; init; }
 
     public static ApiResponse<T> Ok(T data) => new()

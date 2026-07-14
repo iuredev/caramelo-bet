@@ -6,6 +6,8 @@ public record AdminUserResponse(
     string Email,
     DateOnly? BirthDate,
     string Status,
+    string? BlockedReason,
+    DateTime? BlockedUntil,
     DateTime CreatedAt,
     DateTime UpdatedAt,
     IReadOnlyCollection<string> Roles
@@ -14,8 +16,7 @@ public record AdminUserResponse(
 public record UpdateAdminUserRequest(
     string Name,
     string Email,
-    DateOnly? BirthDate,
-    string Status
+    DateOnly? BirthDate
 );
 
 public record RoleResponse(
@@ -37,4 +38,9 @@ public record UpdateRoleRequest(
 
 public record AssignRoleRequest(
     Guid RoleId
+);
+
+public record BlockUserRequest(
+    string Reason,
+    DateTimeOffset? ExpiresAt
 );

@@ -20,6 +20,8 @@ public static class DependencyInjection
         services.AddScoped<GetAdminUserUseCase>();
         services.AddScoped<UpdateAdminUserUseCase>();
         services.AddScoped<DeleteAdminUserUseCase>();
+        services.AddScoped<BlockAdminUserUseCase>();
+        services.AddScoped<UnblockAdminUserUseCase>();
         services.AddScoped<ListRolesUseCase>();
         services.AddScoped<CreateRoleUseCase>();
         services.AddScoped<UpdateRoleUseCase>();

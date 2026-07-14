@@ -231,7 +231,7 @@ public class User
 
 | Service | Endpoints |
 |---|---|
-| Auth Service | 17 endpoints |
+| Auth Service | 19 endpoints |
 | Wallet Service | 4 endpoints + queue consumer |
 | Game Service | 9 endpoints |
 | History Service | 10 endpoints |
@@ -353,7 +353,7 @@ http://localhost:5540     → RedisInsight
 
 The Auth Service establishes patterns all other services follow. Build this carefully.
 
-### Endpoints to build (17 total)
+### Endpoints implemented (19 total)
 
 ```
 POST   /api/auth/register
@@ -371,6 +371,8 @@ GET    /api/admin/users
 GET    /api/admin/users/{id}
 PUT    /api/admin/users/{id}
 DELETE /api/admin/users/{id}
+POST   /api/admin/users/{id}/block
+DELETE /api/admin/users/{id}/block
 
 GET    /api/admin/roles
 POST   /api/admin/roles
@@ -429,6 +431,7 @@ POST   /api/admin/users/{userId}/roles
 
 8. **Build RBAC management (admin endpoints)**
    - List/get/update/delete users
+   - Block users with a reason and optional expiration; unblock users
    - List/create/update roles
    - Assign roles to users
 
@@ -495,7 +498,7 @@ public static class AuthEndpoints
 
 ### Phase 2 deliverables
 
-- [x] All 17 endpoints working
+- [x] All 19 endpoints working, including dedicated block and unblock moderation
 - [x] JWT validation on protected endpoints in the API and Gateway
 - [x] Password reset email flow
 - [x] Admin endpoints with proper RBAC checks

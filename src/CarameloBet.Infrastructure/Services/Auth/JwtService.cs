@@ -14,14 +14,12 @@ public class JwtService(IConfiguration configuration) : IJwtService
     private const int AccessTokenExpiryMinutes = 15;
     private const int RefreshTokenBytes = 64;
 
-    public DateTime AccessTokenExpiresAt { get; private set; }
-
     public string GenerateAccessToken(
         User user,
         IReadOnlyCollection<string> roles,
         IReadOnlyCollection<string> permissions)
     {
-        AccessTokenExpiresAt = DateTime.UtcNow.AddMinutes(AccessTokenExpiryMinutes);
+        var accessTokenExpiresAt = DateTime.UtcNow.AddMinutes(AccessTokenExpiryMinutes);
 
         var secret = GetRequiredSetting("Jwt:Secret");
         var issuer = GetRequiredSetting("Jwt:Issuer");
@@ -50,7 +48,7 @@ public class JwtService(IConfiguration configuration) : IJwtService
             issuer,
             audience,
             claims,
-            expires: AccessTokenExpiresAt,
+            expires: accessTokenExpiresAt,
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

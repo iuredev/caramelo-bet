@@ -58,6 +58,33 @@ public class AuthEntityTests
     }
 
     [Fact]
+    public void UserBlockStoresModerationDetails()
+    {
+        var user = User.Create("Player", "player@example.com", "hash");
+        var blockedUntil = DateTime.UtcNow.AddDays(1);
+
+        user.Block("Responsible gaming review", blockedUntil);
+
+        Assert.Equal("blocked", user.Status);
+        Assert.Equal("Responsible gaming review", user.BlockedReason);
+        Assert.Equal(blockedUntil, user.BlockedUntil);
+    }
+
+    [Fact]
+    public void UserReleaseExpiredBlockReactivatesUser()
+    {
+        var user = User.Create("Player", "player@example.com", "hash");
+        user.Block("Temporary review", DateTime.UtcNow.AddMinutes(1));
+
+        var released = user.ReleaseExpiredBlock(DateTime.UtcNow.AddMinutes(2));
+
+        Assert.True(released);
+        Assert.Equal("active", user.Status);
+        Assert.Null(user.BlockedReason);
+        Assert.Null(user.BlockedUntil);
+    }
+
+    [Fact]
     public void RoleCreateAndUpdateMaintainsIdentity()
     {
         var role = Role.Create("support", "Support agent");

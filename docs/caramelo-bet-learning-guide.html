@@ -404,7 +404,7 @@
         </table>
 
         <div class="note">
-          <strong>Current result:</strong> all 17 Phase 2 endpoints are implemented and verified. This includes the nine routes above plus eight admin user and role management routes protected by the <code>AdminOnly</code> policy.
+          <strong>Current result:</strong> all 19 Auth endpoints are implemented. This includes the nine routes above plus ten admin user, moderation, and role management routes protected by the <code>AdminOnly</code> policy.
         </div>
       </section>
 
@@ -637,7 +637,6 @@ public class LoginUseCase
 public record LoginResponse(
     string AccessToken,
     string RefreshToken,
-    DateTime AccessTokenExpiresAt,
     AuthenticatedUserResponse User
 );</code></pre>
 

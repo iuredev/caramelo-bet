@@ -23,7 +23,7 @@ public class RefreshTokenUseCase(
 
         var user = await userRepository.GetByIdAsync(storedToken.UserId);
 
-        if (user is null || user.Status != "active")
+        if (user is null || !await UserAccess.IsActiveAsync(user, userRepository))
         {
             storedToken.Revoke();
             await refreshTokenRepository.SaveChangesAsync();
@@ -36,12 +36,6 @@ public class RefreshTokenUseCase(
 
         return new RefreshTokenResponse(
             accessToken,
-            refreshToken,
-            jwtService.AccessTokenExpiresAt,
-            new AuthenticatedUserResponse(
-                user.Id,
-                user.Name,
-                user.Email,
-                user.Status));
+            refreshToken);
     }
 }

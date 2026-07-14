@@ -14,7 +14,9 @@ using CarameloBet.Infrastructure.Persistence.Auth;
 using CarameloBet.Infrastructure.Persistence.Game;
 using CarameloBet.Infrastructure;
 using CarameloBet.API.Endpoints;
+using CarameloBet.API.OpenApi;
 using CarameloBet.Application.Validators.Auth;
+using Scalar.AspNetCore;
 using System.Threading.RateLimiting;
 
 
@@ -110,7 +112,11 @@ try
     builder.Services.AddProblemDetails();
     // Add services to the container.
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-    builder.Services.AddOpenApi();
+    builder.Services.AddOpenApi(options =>
+    {
+        options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+        options.AddOperationTransformer<BearerSecurityRequirementTransformer>();
+    });
 
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
@@ -123,6 +129,9 @@ try
     if (app.Environment.IsDevelopment())
     {
         app.MapOpenApi();
+        app.MapScalarApiReference(options => options
+            .WithTitle("CarameloBet API")
+            .AddPreferredSecuritySchemes(["Bearer"]));
         app.MapGet("/test-error", () =>
         {
             throw new Exception();
@@ -137,6 +146,7 @@ try
     app.UseCors("CarameloBetPolicy");
     app.UseRateLimiter();
     app.UseAuthentication();
+    app.UseMiddleware<ActiveUserMiddleware>();
     app.UseAuthorization();
 
     // Prometheus

@@ -22,7 +22,7 @@ public class ResetPasswordUseCase(
 
         var user = await userRepository.GetByIdAsync(storedToken.UserId);
 
-        if (user is null || user.Status != "active")
+        if (user is null || !await UserAccess.IsActiveAsync(user, userRepository))
         {
             throw new UnauthorizedAccessException("Invalid password reset token");
         }

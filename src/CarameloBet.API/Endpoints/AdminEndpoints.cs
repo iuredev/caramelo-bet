@@ -57,6 +57,33 @@ public static class AdminEndpoints
             return Results.Ok(ApiResponse<string>.Ok("User deleted"));
         });
 
+        group.MapPost("/users/{id:guid}/block", async (
+            Guid id,
+            BlockUserRequest request,
+            BlockAdminUserUseCase useCase,
+            IValidator<BlockUserRequest> validator) =>
+        {
+            var validationResult = await validator.ValidateAsync(request);
+
+            if (!validationResult.IsValid)
+            {
+                return ToValidationProblem(validationResult);
+            }
+
+            var response = await useCase.ExecuteAsync(id, request);
+
+            return Results.Ok(ApiResponse<AdminUserResponse>.Ok(response));
+        });
+
+        group.MapDelete("/users/{id:guid}/block", async (
+            Guid id,
+            UnblockAdminUserUseCase useCase) =>
+        {
+            var response = await useCase.ExecuteAsync(id);
+
+            return Results.Ok(ApiResponse<AdminUserResponse>.Ok(response));
+        });
+
         group.MapGet("/roles", async (ListRolesUseCase useCase) =>
         {
             var response = await useCase.ExecuteAsync();

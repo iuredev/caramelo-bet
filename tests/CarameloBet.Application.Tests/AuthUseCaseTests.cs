@@ -55,6 +55,8 @@ public class AuthUseCaseTests
         Assert.Equal("access-token", response.AccessToken);
         Assert.Equal("refresh-token-1", response.RefreshToken);
         Assert.Equal(user.Id, response.User.Id);
+        Assert.Equal(user.Email, response.User.Email);
+        Assert.Contains("player", response.User.Roles);
         Assert.Single(refreshTokens.Tokens);
         Assert.False(refreshTokens.Tokens[0].IsRevoked);
     }
@@ -447,14 +449,11 @@ public class AuthUseCaseTests
     {
         private int _refreshTokenNumber;
 
-        public DateTime AccessTokenExpiresAt { get; private set; }
-
         public string GenerateAccessToken(
             User user,
             IReadOnlyCollection<string> roles,
             IReadOnlyCollection<string> permissions)
         {
-            AccessTokenExpiresAt = DateTime.UtcNow.AddMinutes(15);
             return "access-token";
         }
 
