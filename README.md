@@ -18,6 +18,10 @@ CarameloBet is a portfolio project demonstrating a production-grade iGaming plat
 The project was designed with a full system design process before a single line of code was written — requirements gathering, high-level design, low-level design, technology decisions, and implementation planning. Every architectural decision has a documented reason behind it.
 
 ---
+## System Design HLD
+<img width="12063" height="6842" alt="Untitled-2026-04-10-1706" src="https://github.com/user-attachments/assets/3a53fd02-e7b9-4f05-a364-a70087190f10" />
+
+
 
 ## Games
 
